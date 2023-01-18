@@ -1,7 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"github.com/gin-gonic/gin"
+	account_controller "github.com/sheason2019/spoved/libs/controller/account"
+)
 
 func main() {
-	fmt.Println("Hello spoved")
+	r := gin.Default()
+
+	account_controller.BindController(r)
+
+	r.Run()
 }
