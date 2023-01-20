@@ -1,4 +1,4 @@
-package account_service
+package crypto_service
 
 type RsaKeyPair struct {
 	PubKey string

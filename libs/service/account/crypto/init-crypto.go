@@ -1,4 +1,4 @@
-package account_service
+package crypto_service
 
 import (
 	"crypto/rand"
@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 
+	"github.com/sheason2019/spoved/exceptions/exception"
 	file_service "github.com/sheason2019/spoved/libs/service/file"
 )
 
@@ -22,17 +23,17 @@ func MustGetRsaPair() (keyPair *RsaKeyPair) {
 }
 
 // 取得密钥对
-func GetRsaPair() (keyPair *RsaKeyPair, err error) {
+func GetRsaPair() (keyPair *RsaKeyPair, e *exception.Exception) {
 	keyPair = &RsaKeyPair{}
 	prvContent, err := file_service.Read(_key_path)
 	if err != nil {
-		return nil, err
+		return nil, exception.New(err)
 	}
 	keyPair.PrvKey = string(prvContent)
 
 	pubContent, err := file_service.Read(_pub_key_path)
 	if err != nil {
-		return nil, err
+		return nil, exception.New(err)
 	}
 	keyPair.PubKey = string(pubContent)
 
@@ -40,23 +41,23 @@ func GetRsaPair() (keyPair *RsaKeyPair, err error) {
 }
 
 // 生成RSA密钥对文件
-func InitRsa() (*RsaKeyPair, error) {
+func InitRsa() (*RsaKeyPair, *exception.Exception) {
 	// 若产生错误，则表示无法获取到当前的RSA密钥对，需要重新生成
 	keyPair, err := genRsaKey()
 	if err != nil {
-		return nil, err
+		return nil, exception.New(err)
 	}
 	// 将KeyPair写入文件系统实现持久化
 	err = keyPair.persist()
-	return keyPair, err
+	return keyPair, err.Wrap()
 }
 
 // 生成密钥对
-func genRsaKey() (*RsaKeyPair, error) {
+func genRsaKey() (*RsaKeyPair, *exception.Exception) {
 	keyPair := &RsaKeyPair{}
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
 	if err != nil {
-		return nil, err
+		return nil, exception.New(err)
 	}
 	derStream := x509.MarshalPKCS1PrivateKey(privateKey)
 	block := &pem.Block{
@@ -67,7 +68,7 @@ func genRsaKey() (*RsaKeyPair, error) {
 	publicKey := &privateKey.PublicKey
 	derPkix, err := x509.MarshalPKIXPublicKey(publicKey)
 	if err != nil {
-		return nil, err
+		return nil, exception.New(err)
 	}
 	block = &pem.Block{
 		Type:  "PUBLIC KEY",
@@ -125,10 +126,14 @@ func RsaDecrypt(ciphertext, keyBytes []byte) []byte {
 const _pub_key_path = "rsa_key.pub"
 const _key_path = "rsa_key"
 
-func (k *RsaKeyPair) persist() error {
+func (k *RsaKeyPair) persist() *exception.Exception {
 	err := file_service.Write(k.PubKey, _pub_key_path)
 	if err != nil {
-		return err
+		return exception.New(err)
 	}
-	return file_service.Write(k.PrvKey, _key_path)
+	err = file_service.Write(k.PrvKey, _key_path)
+	if err != nil {
+		return exception.New(err)
+	}
+	return nil
 }

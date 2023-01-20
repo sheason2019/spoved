@@ -3,7 +3,7 @@ package account_controller
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sheason2019/spoved/libs/idl-lib/account"
-	account_service "github.com/sheason2019/spoved/libs/service/account"
+	crypto_service "github.com/sheason2019/spoved/libs/service/account/crypto"
 	"github.com/sheason2019/spoved/libs/utils"
 )
 
@@ -11,7 +11,7 @@ import (
 func (AccountController) GetAccountCrypto(c *gin.Context) account.AccountCrypto {
 	// 加密盐是 32 位随机字符串
 	salt := utils.RandomStr(32)
-	k := account_service.MustGetRsaPair()
+	k := crypto_service.MustGetRsaPair()
 	return account.AccountCrypto{
 		Salt:   salt,
 		PubKey: k.PubKey,
