@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
 
 	"github.com/sheason2019/spoved/exceptions/exception"
 	file_service "github.com/sheason2019/spoved/libs/service/file"
@@ -106,23 +107,23 @@ func RsaEncrypt(data, keyBytes []byte) []byte {
 }
 
 // 私钥解密
-func RsaDecrypt(ciphertext, keyBytes []byte) []byte {
+func RsaDecrypt(ciphertext, keyBytes []byte) ([]byte, *exception.Exception) {
 	//获取私钥
 	block, _ := pem.Decode(keyBytes)
 	if block == nil {
-		panic("private key error!")
+		return nil, exception.New(fmt.Errorf("private key error!"))
 	}
 	//解析PKCS1格式的私钥
 	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
-		panic(err)
+		return nil, exception.New(err)
 	}
 	// 解密
 	data, err := rsa.DecryptPKCS1v15(rand.Reader, priv, ciphertext)
 	if err != nil {
-		panic(err)
+		return nil, exception.New(err)
 	}
-	return data
+	return data, nil
 }
 
 // 持久化存储密钥对

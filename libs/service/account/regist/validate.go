@@ -15,9 +15,12 @@ import (
 // 检测用户的注册信息是否合法
 func RegistValidate(accountInfo *account.AccountInfo) *exception.Exception {
 	// 检查用户名是否重复
-	e := checkUsernameRepeat(accountInfo.Username)
+	repeat, e := CheckUsernameRepeat(accountInfo.Username)
 	if e != nil {
 		return e.Wrap()
+	}
+	if repeat {
+		return exception.New(fmt.Errorf("用户名 %s 已存在", accountInfo.Username))
 	}
 	// 检测用户名是否符合规则
 	e = validateUsername(accountInfo.Username)
@@ -25,21 +28,24 @@ func RegistValidate(accountInfo *account.AccountInfo) *exception.Exception {
 		return e.Wrap()
 	}
 
+	// 检测密码长度
+	e = validatePassword(accountInfo.Password)
+	if e != nil {
+		return e.Wrap()
+	}
+
 	return nil
 }
 
-func checkUsernameRepeat(name string) *exception.Exception {
+func CheckUsernameRepeat(name string) (bool, *exception.Exception) {
 	client := dbc.GetClient()
 
-	user, err := client.User.Query().Where(user.UsernameEQ(name)).First(context.Background())
+	users, err := client.User.Query().Where(user.UsernameEQ(name)).Limit(1).All(context.Background())
 	if err != nil {
-		return exception.New(err)
-	}
-	if user != nil {
-		return exception.New(fmt.Errorf("用户名 %s 已存在", name))
+		return false, exception.New(err)
 	}
 
-	return nil
+	return len(users) != 0, nil
 }
 
 // 用户名规则
@@ -65,4 +71,14 @@ func validateUsername(name string) *exception.Exception {
 func ruleUsername(name string) bool {
 	nameReg, _ := regexp.Compile(`^[\w\-_]{1,24}$`)
 	return nameReg.Match([]byte(name))
+}
+
+// 检测用户密码
+func validatePassword(pwd string) *exception.Exception {
+	// 密码长度4-48位
+	length := len(pwd)
+	if length < 4 || length > 48 {
+		return exception.New(errors.New("密码长度必须在4~48位之间"))
+	}
+	return nil
 }

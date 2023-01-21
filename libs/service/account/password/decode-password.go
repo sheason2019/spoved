@@ -9,7 +9,10 @@ import (
 )
 
 func DecodePassword(info *account.AccountInfo) *exception.Exception {
-	pwd := crypto_service.DecodeString(info.Password)
+	pwd, e := crypto_service.DecodeString(info.Password)
+	if e != nil {
+		return e.Wrap()
+	}
 	salt := pwd[len(pwd)-len(info.Salt):]
 	if salt != info.Salt {
 		return exception.New(fmt.Errorf("解密失败，盐不对等 %s %s", salt, info.Salt))

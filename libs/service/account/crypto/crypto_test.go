@@ -13,7 +13,10 @@ func TestCrypto(t *testing.T) {
 	cipherText := crypto_service.EncodeString(content)
 	fmt.Println("cipherText -> ", hex.EncodeToString([]byte(cipherText)))
 
-	decodeText := crypto_service.DecodeString(cipherText)
+	decodeText, e := crypto_service.DecodeString(cipherText)
+	if e != nil {
+		e.Panic()
+	}
 	if decodeText != content {
 		t.Errorf("解密后的字符串与初始化的字符串不相同：%s\t%s", content, decodeText)
 	}

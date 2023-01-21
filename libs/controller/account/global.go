@@ -12,4 +12,5 @@ var ac account.AccountService = AccountController{}
 func BindController(r *gin.Engine) {
 	bindGetAccountCrypto(r)
 	bindRegist(r)
+	bindGetUsernameRepeat(r)
 }

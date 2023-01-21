@@ -1,13 +1,22 @@
 package utils
 
-import "github.com/gin-gonic/gin"
+import (
+	"encoding/json"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sheason2019/spoved/libs/middleware"
+)
 
 func GetProps[T any](c *gin.Context) *T {
 	var v T
-	if c.Request.Method == "GET" || c.Request.Method == "DELETE" {
-		c.BindQuery(&v)
-	} else {
-		c.BindJSON(&v)
+	j, e := middleware.GetData(c)
+	if e != nil {
+		e.Panic()
+	}
+
+	err := json.Unmarshal([]byte(j), &v)
+	if err != nil {
+		panic(err)
 	}
 
 	return &v
