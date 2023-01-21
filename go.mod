@@ -5,6 +5,7 @@ go 1.19
 require (
 	entgo.io/ent v0.11.6
 	github.com/gin-gonic/gin v1.8.2
+	github.com/go-playground/assert/v2 v2.0.1
 )
 
 require (

@@ -49,7 +49,10 @@ func InitRsa() (*RsaKeyPair, *exception.Exception) {
 	}
 	// 将KeyPair写入文件系统实现持久化
 	err = keyPair.persist()
-	return keyPair, err.Wrap()
+	if err != nil {
+		return nil, err.Wrap()
+	}
+	return keyPair, nil
 }
 
 // 生成密钥对
