@@ -1,25 +1,23 @@
 package regist_service
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"regexp"
 
-	"github.com/sheason2019/spoved/ent/user"
 	"github.com/sheason2019/spoved/exceptions/exception"
-	"github.com/sheason2019/spoved/libs/dbc"
 	"github.com/sheason2019/spoved/libs/idl-lib/account"
+	account_service "github.com/sheason2019/spoved/libs/service/account/account"
 )
 
 // 检测用户的注册信息是否合法
 func RegistValidate(accountInfo *account.AccountInfo) *exception.Exception {
 	// 检查用户名是否重复
-	repeat, e := CheckUsernameRepeat(accountInfo.Username)
+	usr, e := account_service.FindUserByUsername(accountInfo.Username)
 	if e != nil {
 		return e.Wrap()
 	}
-	if repeat {
+	if usr == nil {
 		return exception.New(fmt.Errorf("用户名 %s 已存在", accountInfo.Username))
 	}
 	// 检测用户名是否符合规则
@@ -35,17 +33,6 @@ func RegistValidate(accountInfo *account.AccountInfo) *exception.Exception {
 	}
 
 	return nil
-}
-
-func CheckUsernameRepeat(name string) (bool, *exception.Exception) {
-	client := dbc.GetClient()
-
-	users, err := client.User.Query().Where(user.UsernameEQ(name)).Limit(1).All(context.Background())
-	if err != nil {
-		return false, exception.New(err)
-	}
-
-	return len(users) != 0, nil
 }
 
 // 用户名规则

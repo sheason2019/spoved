@@ -9,7 +9,11 @@ import (
 
 func EncodePassword(password string) (cipherPassword, salt string) {
 	salt = utils.RandomStr(32)
-	cipherPassword = fmt.Sprintf("%x", md5.Sum([]byte(password+salt)))
+	cipherPassword = StringHash(password + salt)
 
 	return
+}
+
+func StringHash(content string) string {
+	return fmt.Sprintf("%x", md5.Sum([]byte(content)))
 }

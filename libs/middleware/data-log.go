@@ -20,26 +20,45 @@ func DataLog(c *gin.Context) {
 			arg[key] = c.Request.URL.Query().Get(key)
 		}
 		j = JsonStr(arg)
-		fmt.Printf("REQUEST QUERY\n%s\n", j)
+		fmt.Printf("\n\033[32mREQUEST QUERY\033[0m\n%s\n", j)
 	} else {
 		c.BindJSON(&arg)
 		j = JsonStr(arg)
-		fmt.Printf("REQUEST BODY\n%s\n", j)
+		fmt.Printf("\n\033[32mREQUEST BODY\033[0m\n%s\n", j)
 	}
 
 	c.Set("data", j)
+
+	blw := CustomResponseWriter{
+		body:           bytes.NewBufferString(""),
+		ResponseWriter: c.Writer,
+	}
+	c.Writer = blw
 	c.Next()
+
+	j = ShowBodyString(blw.body.Bytes())
+	fmt.Printf("\033[32mRESPONSE DATA\033[0m\n%s\n", j)
 }
 
 func JsonStr(v any) string {
 	j, e := json.Marshal(v)
 	if e != nil {
-		panic(e)
+		exception.New(e).Panic()
 	}
 
 	var buf bytes.Buffer
 	_ = json.Indent(&buf, j, "", "  ")
 	return buf.String()
+}
+
+func ShowBodyString(body []byte) string {
+	m := make(map[string]any)
+	err := json.Unmarshal(body, &m)
+	if err != nil {
+		exception.New(err).Panic()
+	}
+
+	return JsonStr(m)
 }
 
 func GetData(c *gin.Context) (string, *exception.Exception) {
@@ -49,4 +68,19 @@ func GetData(c *gin.Context) (string, *exception.Exception) {
 	}
 
 	return j.(string), nil
+}
+
+type CustomResponseWriter struct {
+	gin.ResponseWriter
+	body *bytes.Buffer
+}
+
+func (w CustomResponseWriter) Write(b []byte) (int, error) {
+	w.body.Write(b)
+	return w.ResponseWriter.Write(b)
+}
+
+func (w CustomResponseWriter) WriteString(s string) (int, error) {
+	w.body.WriteString(s)
+	return w.ResponseWriter.WriteString(s)
 }

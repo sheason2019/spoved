@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 
 	"github.com/sheason2019/spoved/exceptions/exception"
@@ -20,7 +21,8 @@ func MustGetRsaPair() (keyPair *RsaKeyPair) {
 	if e == nil {
 		return k
 	}
-	panic(e)
+	e.Panic()
+	return
 }
 
 // 取得密钥对
@@ -89,19 +91,19 @@ func RsaEncrypt(data, keyBytes []byte) []byte {
 	//解密pem格式的公钥
 	block, _ := pem.Decode(keyBytes)
 	if block == nil {
-		panic("public key error")
+		exception.New(errors.New("public key error")).Panic()
 	}
 	// 解析公钥
 	pubInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
 	if err != nil {
-		panic(err)
+		exception.New(err).Panic()
 	}
 	// 类型断言
 	pub := pubInterface.(*rsa.PublicKey)
 	//加密
 	ciphertext, err := rsa.EncryptPKCS1v15(rand.Reader, pub, data)
 	if err != nil {
-		panic(err)
+		exception.New(err).Panic()
 	}
 	return ciphertext
 }
