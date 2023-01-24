@@ -14,4 +14,5 @@ func BindController(r *gin.Engine) {
 	bindRegist(r)
 	bindGetUsernameRepeat(r)
 	bindLogin(r)
+	bindGetCurrentUser(r)
 }

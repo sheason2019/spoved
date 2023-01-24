@@ -37,9 +37,9 @@ func GenerateJwt(user *ent.User) (string, *exception.Exception) {
 }
 
 // 解析
-func ParseJwt(tokenString string) (*JwtClaims, error) {
+func ParseJwt(tokenString string) (*JwtClaims, *exception.Exception) {
 	token, err := jwt.ParseWithClaims(tokenString, &JwtClaims{}, func(t *jwt.Token) (interface{}, error) {
-		return jwtSecret, nil
+		return []byte(jwtSecret), nil
 	})
 
 	if token != nil {
@@ -47,7 +47,7 @@ func ParseJwt(tokenString string) (*JwtClaims, error) {
 			return claims, nil
 		}
 	}
-	return nil, err
+	return nil, exception.New(err)
 }
 
 // 生成Jwt的加密秘钥

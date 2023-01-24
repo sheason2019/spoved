@@ -13,7 +13,7 @@ func (AccountController) GetUsernameRepeat(ctx *gin.Context, payload account.Get
 		e.Panic()
 	}
 	return account.GetUsernameRepeatResponse{
-		Repeat: usr == nil,
+		Repeat: usr != nil,
 	}
 }
 

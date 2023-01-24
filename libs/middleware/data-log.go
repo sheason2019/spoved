@@ -51,7 +51,11 @@ func JsonStr(v any) string {
 	return buf.String()
 }
 
+// 展示返回值的内容
 func ShowBodyString(body []byte) string {
+	if len(body) == 0 {
+		return "{}"
+	}
 	m := make(map[string]any)
 	err := json.Unmarshal(body, &m)
 	if err != nil {
@@ -61,6 +65,7 @@ func ShowBodyString(body []byte) string {
 	return JsonStr(m)
 }
 
+// 获取请求的参数
 func GetData(c *gin.Context) (string, *exception.Exception) {
 	j, exist := c.Get("data")
 	if !exist {

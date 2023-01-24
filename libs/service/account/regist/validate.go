@@ -17,7 +17,7 @@ func RegistValidate(accountInfo *account.AccountInfo) *exception.Exception {
 	if e != nil {
 		return e.Wrap()
 	}
-	if usr == nil {
+	if usr != nil {
 		return exception.New(fmt.Errorf("用户名 %s 已存在", accountInfo.Username))
 	}
 	// 检测用户名是否符合规则
