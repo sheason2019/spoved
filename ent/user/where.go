@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/sheason2019/spoved/ent/predicate"
 )
 
@@ -307,6 +308,33 @@ func CreatedAtLT(v time.Time) predicate.User {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// HasProjects applies the HasEdge predicate on the "projects" edge.
+func HasProjects() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, ProjectsTable, ProjectsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectsWith applies the HasEdge predicate on the "projects" edge with a given conditions (other predicates).
+func HasProjectsWith(preds ...predicate.Project) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProjectsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, ProjectsTable, ProjectsPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

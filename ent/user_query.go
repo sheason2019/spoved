@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -11,16 +12,18 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/sheason2019/spoved/ent/predicate"
+	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
 )
 
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx        *QueryContext
-	order      []OrderFunc
-	inters     []Interceptor
-	predicates []predicate.User
+	ctx          *QueryContext
+	order        []OrderFunc
+	inters       []Interceptor
+	predicates   []predicate.User
+	withProjects *ProjectQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -55,6 +58,28 @@ func (uq *UserQuery) Unique(unique bool) *UserQuery {
 func (uq *UserQuery) Order(o ...OrderFunc) *UserQuery {
 	uq.order = append(uq.order, o...)
 	return uq
+}
+
+// QueryProjects chains the current query on the "projects" edge.
+func (uq *UserQuery) QueryProjects() *ProjectQuery {
+	query := (&ProjectClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.ProjectsTable, user.ProjectsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first User entity from the query.
@@ -242,15 +267,27 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:     uq.config,
-		ctx:        uq.ctx.Clone(),
-		order:      append([]OrderFunc{}, uq.order...),
-		inters:     append([]Interceptor{}, uq.inters...),
-		predicates: append([]predicate.User{}, uq.predicates...),
+		config:       uq.config,
+		ctx:          uq.ctx.Clone(),
+		order:        append([]OrderFunc{}, uq.order...),
+		inters:       append([]Interceptor{}, uq.inters...),
+		predicates:   append([]predicate.User{}, uq.predicates...),
+		withProjects: uq.withProjects.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
 	}
+}
+
+// WithProjects tells the query-builder to eager-load the nodes that are connected to
+// the "projects" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithProjects(opts ...func(*ProjectQuery)) *UserQuery {
+	query := (&ProjectClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withProjects = query
+	return uq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -329,8 +366,11 @@ func (uq *UserQuery) prepareQuery(ctx context.Context) error {
 
 func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, error) {
 	var (
-		nodes = []*User{}
-		_spec = uq.querySpec()
+		nodes       = []*User{}
+		_spec       = uq.querySpec()
+		loadedTypes = [1]bool{
+			uq.withProjects != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*User).scanValues(nil, columns)
@@ -338,6 +378,7 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &User{config: uq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -349,7 +390,73 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := uq.withProjects; query != nil {
+		if err := uq.loadProjects(ctx, query, nodes,
+			func(n *User) { n.Edges.Projects = []*Project{} },
+			func(n *User, e *Project) { n.Edges.Projects = append(n.Edges.Projects, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (uq *UserQuery) loadProjects(ctx context.Context, query *ProjectQuery, nodes []*User, init func(*User), assign func(*User, *Project)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*User)
+	nids := make(map[int]map[*User]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(user.ProjectsTable)
+		s.Join(joinT).On(s.C(project.FieldID), joinT.C(user.ProjectsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(user.ProjectsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(user.ProjectsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(sql.NullInt64)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := int(values[0].(*sql.NullInt64).Int64)
+			inValue := int(values[1].(*sql.NullInt64).Int64)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "projects" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
 }
 
 func (uq *UserQuery) sqlCount(ctx context.Context) (int, error) {

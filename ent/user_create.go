@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
 )
 
@@ -42,6 +43,21 @@ func (uc *UserCreate) SetPasswordSalt(s string) *UserCreate {
 func (uc *UserCreate) SetCreatedAt(t time.Time) *UserCreate {
 	uc.mutation.SetCreatedAt(t)
 	return uc
+}
+
+// AddProjectIDs adds the "projects" edge to the Project entity by IDs.
+func (uc *UserCreate) AddProjectIDs(ids ...int) *UserCreate {
+	uc.mutation.AddProjectIDs(ids...)
+	return uc
+}
+
+// AddProjects adds the "projects" edges to the Project entity.
+func (uc *UserCreate) AddProjects(p ...*Project) *UserCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return uc.AddProjectIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -137,6 +153,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.CreatedAt(); ok {
 		_spec.SetField(user.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := uc.mutation.ProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.ProjectsTable,
+			Columns: user.ProjectsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

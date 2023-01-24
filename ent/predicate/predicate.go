@@ -6,5 +6,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// GitRepo is the predicate function for gitrepo builders.
+type GitRepo func(*sql.Selector)
+
+// Project is the predicate function for project builders.
+type Project func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

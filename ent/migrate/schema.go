@@ -8,6 +8,44 @@ import (
 )
 
 var (
+	// GitReposColumns holds the columns for the "git_repos" table.
+	GitReposColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "git_url", Type: field.TypeString},
+	}
+	// GitReposTable holds the schema information for the "git_repos" table.
+	GitReposTable = &schema.Table{
+		Name:       "git_repos",
+		Columns:    GitReposColumns,
+		PrimaryKey: []*schema.Column{GitReposColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "gitrepo_git_url",
+				Unique:  true,
+				Columns: []*schema.Column{GitReposColumns[1]},
+			},
+		},
+	}
+	// ProjectsColumns holds the columns for the "projects" table.
+	ProjectsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "project_name", Type: field.TypeString},
+		{Name: "describe", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// ProjectsTable holds the schema information for the "projects" table.
+	ProjectsTable = &schema.Table{
+		Name:       "projects",
+		Columns:    ProjectsColumns,
+		PrimaryKey: []*schema.Column{ProjectsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "project_project_name",
+				Unique:  false,
+				Columns: []*schema.Column{ProjectsColumns[1]},
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -29,11 +67,69 @@ var (
 			},
 		},
 	}
+	// GitRepoProjectsColumns holds the columns for the "git_repo_projects" table.
+	GitRepoProjectsColumns = []*schema.Column{
+		{Name: "git_repo_id", Type: field.TypeInt},
+		{Name: "project_id", Type: field.TypeInt},
+	}
+	// GitRepoProjectsTable holds the schema information for the "git_repo_projects" table.
+	GitRepoProjectsTable = &schema.Table{
+		Name:       "git_repo_projects",
+		Columns:    GitRepoProjectsColumns,
+		PrimaryKey: []*schema.Column{GitRepoProjectsColumns[0], GitRepoProjectsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "git_repo_projects_git_repo_id",
+				Columns:    []*schema.Column{GitRepoProjectsColumns[0]},
+				RefColumns: []*schema.Column{GitReposColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "git_repo_projects_project_id",
+				Columns:    []*schema.Column{GitRepoProjectsColumns[1]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// UserProjectsColumns holds the columns for the "user_projects" table.
+	UserProjectsColumns = []*schema.Column{
+		{Name: "user_id", Type: field.TypeInt},
+		{Name: "project_id", Type: field.TypeInt},
+	}
+	// UserProjectsTable holds the schema information for the "user_projects" table.
+	UserProjectsTable = &schema.Table{
+		Name:       "user_projects",
+		Columns:    UserProjectsColumns,
+		PrimaryKey: []*schema.Column{UserProjectsColumns[0], UserProjectsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_projects_user_id",
+				Columns:    []*schema.Column{UserProjectsColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "user_projects_project_id",
+				Columns:    []*schema.Column{UserProjectsColumns[1]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		GitReposTable,
+		ProjectsTable,
 		UsersTable,
+		GitRepoProjectsTable,
+		UserProjectsTable,
 	}
 )
 
 func init() {
+	GitRepoProjectsTable.ForeignKeys[0].RefTable = GitReposTable
+	GitRepoProjectsTable.ForeignKeys[1].RefTable = ProjectsTable
+	UserProjectsTable.ForeignKeys[0].RefTable = UsersTable
+	UserProjectsTable.ForeignKeys[1].RefTable = ProjectsTable
 }
