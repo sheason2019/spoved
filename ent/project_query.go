@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/sheason2019/spoved/ent/gitrepo"
 	"github.com/sheason2019/spoved/ent/predicate"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
@@ -24,7 +23,6 @@ type ProjectQuery struct {
 	order       []OrderFunc
 	inters      []Interceptor
 	predicates  []predicate.Project
-	withGitRepo *GitRepoQuery
 	withCreator *UserQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -60,28 +58,6 @@ func (pq *ProjectQuery) Unique(unique bool) *ProjectQuery {
 func (pq *ProjectQuery) Order(o ...OrderFunc) *ProjectQuery {
 	pq.order = append(pq.order, o...)
 	return pq
-}
-
-// QueryGitRepo chains the current query on the "git_repo" edge.
-func (pq *ProjectQuery) QueryGitRepo() *GitRepoQuery {
-	query := (&GitRepoClient{config: pq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := pq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := pq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(project.Table, project.FieldID, selector),
-			sqlgraph.To(gitrepo.Table, gitrepo.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, project.GitRepoTable, project.GitRepoPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QueryCreator chains the current query on the "creator" edge.
@@ -296,23 +272,11 @@ func (pq *ProjectQuery) Clone() *ProjectQuery {
 		order:       append([]OrderFunc{}, pq.order...),
 		inters:      append([]Interceptor{}, pq.inters...),
 		predicates:  append([]predicate.Project{}, pq.predicates...),
-		withGitRepo: pq.withGitRepo.Clone(),
 		withCreator: pq.withCreator.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
 	}
-}
-
-// WithGitRepo tells the query-builder to eager-load the nodes that are connected to
-// the "git_repo" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *ProjectQuery) WithGitRepo(opts ...func(*GitRepoQuery)) *ProjectQuery {
-	query := (&GitRepoClient{config: pq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	pq.withGitRepo = query
-	return pq
 }
 
 // WithCreator tells the query-builder to eager-load the nodes that are connected to
@@ -404,8 +368,7 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	var (
 		nodes       = []*Project{}
 		_spec       = pq.querySpec()
-		loadedTypes = [2]bool{
-			pq.withGitRepo != nil,
+		loadedTypes = [1]bool{
 			pq.withCreator != nil,
 		}
 	)
@@ -427,13 +390,6 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := pq.withGitRepo; query != nil {
-		if err := pq.loadGitRepo(ctx, query, nodes,
-			func(n *Project) { n.Edges.GitRepo = []*GitRepo{} },
-			func(n *Project, e *GitRepo) { n.Edges.GitRepo = append(n.Edges.GitRepo, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := pq.withCreator; query != nil {
 		if err := pq.loadCreator(ctx, query, nodes,
 			func(n *Project) { n.Edges.Creator = []*User{} },
@@ -444,64 +400,6 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	return nodes, nil
 }
 
-func (pq *ProjectQuery) loadGitRepo(ctx context.Context, query *GitRepoQuery, nodes []*Project, init func(*Project), assign func(*Project, *GitRepo)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[int]*Project)
-	nids := make(map[int]map[*Project]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(project.GitRepoTable)
-		s.Join(joinT).On(s.C(gitrepo.FieldID), joinT.C(project.GitRepoPrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(project.GitRepoPrimaryKey[1]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(project.GitRepoPrimaryKey[1]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-		assign := spec.Assign
-		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
-			values, err := values(columns[1:])
-			if err != nil {
-				return nil, err
-			}
-			return append([]any{new(sql.NullInt64)}, values...), nil
-		}
-		spec.Assign = func(columns []string, values []any) error {
-			outValue := int(values[0].(*sql.NullInt64).Int64)
-			inValue := int(values[1].(*sql.NullInt64).Int64)
-			if nids[inValue] == nil {
-				nids[inValue] = map[*Project]struct{}{byID[outValue]: {}}
-				return assign(columns[1:], values[1:])
-			}
-			nids[inValue][byID[outValue]] = struct{}{}
-			return nil
-		}
-	})
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "git_repo" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
 func (pq *ProjectQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []*Project, init func(*Project), assign func(*Project, *User)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[int]*Project)

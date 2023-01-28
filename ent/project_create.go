@@ -10,7 +10,6 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/sheason2019/spoved/ent/gitrepo"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
 )
@@ -34,25 +33,22 @@ func (pc *ProjectCreate) SetDescribe(s string) *ProjectCreate {
 	return pc
 }
 
+// SetGitURL sets the "git_url" field.
+func (pc *ProjectCreate) SetGitURL(s string) *ProjectCreate {
+	pc.mutation.SetGitURL(s)
+	return pc
+}
+
+// SetDirPath sets the "dir_path" field.
+func (pc *ProjectCreate) SetDirPath(s string) *ProjectCreate {
+	pc.mutation.SetDirPath(s)
+	return pc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (pc *ProjectCreate) SetCreatedAt(t time.Time) *ProjectCreate {
 	pc.mutation.SetCreatedAt(t)
 	return pc
-}
-
-// AddGitRepoIDs adds the "git_repo" edge to the GitRepo entity by IDs.
-func (pc *ProjectCreate) AddGitRepoIDs(ids ...int) *ProjectCreate {
-	pc.mutation.AddGitRepoIDs(ids...)
-	return pc
-}
-
-// AddGitRepo adds the "git_repo" edges to the GitRepo entity.
-func (pc *ProjectCreate) AddGitRepo(g ...*GitRepo) *ProjectCreate {
-	ids := make([]int, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
-	}
-	return pc.AddGitRepoIDs(ids...)
 }
 
 // AddCreatorIDs adds the "creator" edge to the User entity by IDs.
@@ -110,6 +106,12 @@ func (pc *ProjectCreate) check() error {
 	if _, ok := pc.mutation.Describe(); !ok {
 		return &ValidationError{Name: "describe", err: errors.New(`ent: missing required field "Project.describe"`)}
 	}
+	if _, ok := pc.mutation.GitURL(); !ok {
+		return &ValidationError{Name: "git_url", err: errors.New(`ent: missing required field "Project.git_url"`)}
+	}
+	if _, ok := pc.mutation.DirPath(); !ok {
+		return &ValidationError{Name: "dir_path", err: errors.New(`ent: missing required field "Project.dir_path"`)}
+	}
 	if _, ok := pc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Project.created_at"`)}
 	}
@@ -153,28 +155,17 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		_spec.SetField(project.FieldDescribe, field.TypeString, value)
 		_node.Describe = value
 	}
+	if value, ok := pc.mutation.GitURL(); ok {
+		_spec.SetField(project.FieldGitURL, field.TypeString, value)
+		_node.GitURL = value
+	}
+	if value, ok := pc.mutation.DirPath(); ok {
+		_spec.SetField(project.FieldDirPath, field.TypeString, value)
+		_node.DirPath = value
+	}
 	if value, ok := pc.mutation.CreatedAt(); ok {
 		_spec.SetField(project.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
-	}
-	if nodes := pc.mutation.GitRepoIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   project.GitRepoTable,
-			Columns: project.GitRepoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: gitrepo.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := pc.mutation.CreatorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

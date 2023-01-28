@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sheason2019/spoved/ent/gitrepo"
 	"github.com/sheason2019/spoved/ent/predicate"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
@@ -27,449 +26,28 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeGitRepo = "GitRepo"
 	TypeProject = "Project"
 	TypeUser    = "User"
 )
 
-// GitRepoMutation represents an operation that mutates the GitRepo nodes in the graph.
-type GitRepoMutation struct {
-	config
-	op              Op
-	typ             string
-	id              *int
-	git_url         *string
-	clearedFields   map[string]struct{}
-	projects        map[int]struct{}
-	removedprojects map[int]struct{}
-	clearedprojects bool
-	done            bool
-	oldValue        func(context.Context) (*GitRepo, error)
-	predicates      []predicate.GitRepo
-}
-
-var _ ent.Mutation = (*GitRepoMutation)(nil)
-
-// gitrepoOption allows management of the mutation configuration using functional options.
-type gitrepoOption func(*GitRepoMutation)
-
-// newGitRepoMutation creates new mutation for the GitRepo entity.
-func newGitRepoMutation(c config, op Op, opts ...gitrepoOption) *GitRepoMutation {
-	m := &GitRepoMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeGitRepo,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withGitRepoID sets the ID field of the mutation.
-func withGitRepoID(id int) gitrepoOption {
-	return func(m *GitRepoMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *GitRepo
-		)
-		m.oldValue = func(ctx context.Context) (*GitRepo, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().GitRepo.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withGitRepo sets the old GitRepo of the mutation.
-func withGitRepo(node *GitRepo) gitrepoOption {
-	return func(m *GitRepoMutation) {
-		m.oldValue = func(context.Context) (*GitRepo, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m GitRepoMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m GitRepoMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *GitRepoMutation) ID() (id int, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *GitRepoMutation) IDs(ctx context.Context) ([]int, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []int{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().GitRepo.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetGitURL sets the "git_url" field.
-func (m *GitRepoMutation) SetGitURL(s string) {
-	m.git_url = &s
-}
-
-// GitURL returns the value of the "git_url" field in the mutation.
-func (m *GitRepoMutation) GitURL() (r string, exists bool) {
-	v := m.git_url
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldGitURL returns the old "git_url" field's value of the GitRepo entity.
-// If the GitRepo object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *GitRepoMutation) OldGitURL(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldGitURL is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldGitURL requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldGitURL: %w", err)
-	}
-	return oldValue.GitURL, nil
-}
-
-// ResetGitURL resets all changes to the "git_url" field.
-func (m *GitRepoMutation) ResetGitURL() {
-	m.git_url = nil
-}
-
-// AddProjectIDs adds the "projects" edge to the Project entity by ids.
-func (m *GitRepoMutation) AddProjectIDs(ids ...int) {
-	if m.projects == nil {
-		m.projects = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.projects[ids[i]] = struct{}{}
-	}
-}
-
-// ClearProjects clears the "projects" edge to the Project entity.
-func (m *GitRepoMutation) ClearProjects() {
-	m.clearedprojects = true
-}
-
-// ProjectsCleared reports if the "projects" edge to the Project entity was cleared.
-func (m *GitRepoMutation) ProjectsCleared() bool {
-	return m.clearedprojects
-}
-
-// RemoveProjectIDs removes the "projects" edge to the Project entity by IDs.
-func (m *GitRepoMutation) RemoveProjectIDs(ids ...int) {
-	if m.removedprojects == nil {
-		m.removedprojects = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.projects, ids[i])
-		m.removedprojects[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedProjects returns the removed IDs of the "projects" edge to the Project entity.
-func (m *GitRepoMutation) RemovedProjectsIDs() (ids []int) {
-	for id := range m.removedprojects {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ProjectsIDs returns the "projects" edge IDs in the mutation.
-func (m *GitRepoMutation) ProjectsIDs() (ids []int) {
-	for id := range m.projects {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetProjects resets all changes to the "projects" edge.
-func (m *GitRepoMutation) ResetProjects() {
-	m.projects = nil
-	m.clearedprojects = false
-	m.removedprojects = nil
-}
-
-// Where appends a list predicates to the GitRepoMutation builder.
-func (m *GitRepoMutation) Where(ps ...predicate.GitRepo) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the GitRepoMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *GitRepoMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.GitRepo, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *GitRepoMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *GitRepoMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (GitRepo).
-func (m *GitRepoMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *GitRepoMutation) Fields() []string {
-	fields := make([]string, 0, 1)
-	if m.git_url != nil {
-		fields = append(fields, gitrepo.FieldGitURL)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *GitRepoMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case gitrepo.FieldGitURL:
-		return m.GitURL()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *GitRepoMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case gitrepo.FieldGitURL:
-		return m.OldGitURL(ctx)
-	}
-	return nil, fmt.Errorf("unknown GitRepo field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *GitRepoMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case gitrepo.FieldGitURL:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetGitURL(v)
-		return nil
-	}
-	return fmt.Errorf("unknown GitRepo field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *GitRepoMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *GitRepoMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *GitRepoMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown GitRepo numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *GitRepoMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *GitRepoMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *GitRepoMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown GitRepo nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *GitRepoMutation) ResetField(name string) error {
-	switch name {
-	case gitrepo.FieldGitURL:
-		m.ResetGitURL()
-		return nil
-	}
-	return fmt.Errorf("unknown GitRepo field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *GitRepoMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.projects != nil {
-		edges = append(edges, gitrepo.EdgeProjects)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *GitRepoMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case gitrepo.EdgeProjects:
-		ids := make([]ent.Value, 0, len(m.projects))
-		for id := range m.projects {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *GitRepoMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removedprojects != nil {
-		edges = append(edges, gitrepo.EdgeProjects)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *GitRepoMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case gitrepo.EdgeProjects:
-		ids := make([]ent.Value, 0, len(m.removedprojects))
-		for id := range m.removedprojects {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *GitRepoMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedprojects {
-		edges = append(edges, gitrepo.EdgeProjects)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *GitRepoMutation) EdgeCleared(name string) bool {
-	switch name {
-	case gitrepo.EdgeProjects:
-		return m.clearedprojects
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *GitRepoMutation) ClearEdge(name string) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown GitRepo unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *GitRepoMutation) ResetEdge(name string) error {
-	switch name {
-	case gitrepo.EdgeProjects:
-		m.ResetProjects()
-		return nil
-	}
-	return fmt.Errorf("unknown GitRepo edge %s", name)
-}
-
 // ProjectMutation represents an operation that mutates the Project nodes in the graph.
 type ProjectMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *int
-	project_name    *string
-	describe        *string
-	created_at      *time.Time
-	clearedFields   map[string]struct{}
-	git_repo        map[int]struct{}
-	removedgit_repo map[int]struct{}
-	clearedgit_repo bool
-	creator         map[int]struct{}
-	removedcreator  map[int]struct{}
-	clearedcreator  bool
-	done            bool
-	oldValue        func(context.Context) (*Project, error)
-	predicates      []predicate.Project
+	op             Op
+	typ            string
+	id             *int
+	project_name   *string
+	describe       *string
+	git_url        *string
+	dir_path       *string
+	created_at     *time.Time
+	clearedFields  map[string]struct{}
+	creator        map[int]struct{}
+	removedcreator map[int]struct{}
+	clearedcreator bool
+	done           bool
+	oldValue       func(context.Context) (*Project, error)
+	predicates     []predicate.Project
 }
 
 var _ ent.Mutation = (*ProjectMutation)(nil)
@@ -642,6 +220,78 @@ func (m *ProjectMutation) ResetDescribe() {
 	m.describe = nil
 }
 
+// SetGitURL sets the "git_url" field.
+func (m *ProjectMutation) SetGitURL(s string) {
+	m.git_url = &s
+}
+
+// GitURL returns the value of the "git_url" field in the mutation.
+func (m *ProjectMutation) GitURL() (r string, exists bool) {
+	v := m.git_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldGitURL returns the old "git_url" field's value of the Project entity.
+// If the Project object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectMutation) OldGitURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldGitURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldGitURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldGitURL: %w", err)
+	}
+	return oldValue.GitURL, nil
+}
+
+// ResetGitURL resets all changes to the "git_url" field.
+func (m *ProjectMutation) ResetGitURL() {
+	m.git_url = nil
+}
+
+// SetDirPath sets the "dir_path" field.
+func (m *ProjectMutation) SetDirPath(s string) {
+	m.dir_path = &s
+}
+
+// DirPath returns the value of the "dir_path" field in the mutation.
+func (m *ProjectMutation) DirPath() (r string, exists bool) {
+	v := m.dir_path
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDirPath returns the old "dir_path" field's value of the Project entity.
+// If the Project object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectMutation) OldDirPath(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDirPath is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDirPath requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDirPath: %w", err)
+	}
+	return oldValue.DirPath, nil
+}
+
+// ResetDirPath resets all changes to the "dir_path" field.
+func (m *ProjectMutation) ResetDirPath() {
+	m.dir_path = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *ProjectMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -676,60 +326,6 @@ func (m *ProjectMutation) OldCreatedAt(ctx context.Context) (v time.Time, err er
 // ResetCreatedAt resets all changes to the "created_at" field.
 func (m *ProjectMutation) ResetCreatedAt() {
 	m.created_at = nil
-}
-
-// AddGitRepoIDs adds the "git_repo" edge to the GitRepo entity by ids.
-func (m *ProjectMutation) AddGitRepoIDs(ids ...int) {
-	if m.git_repo == nil {
-		m.git_repo = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.git_repo[ids[i]] = struct{}{}
-	}
-}
-
-// ClearGitRepo clears the "git_repo" edge to the GitRepo entity.
-func (m *ProjectMutation) ClearGitRepo() {
-	m.clearedgit_repo = true
-}
-
-// GitRepoCleared reports if the "git_repo" edge to the GitRepo entity was cleared.
-func (m *ProjectMutation) GitRepoCleared() bool {
-	return m.clearedgit_repo
-}
-
-// RemoveGitRepoIDs removes the "git_repo" edge to the GitRepo entity by IDs.
-func (m *ProjectMutation) RemoveGitRepoIDs(ids ...int) {
-	if m.removedgit_repo == nil {
-		m.removedgit_repo = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.git_repo, ids[i])
-		m.removedgit_repo[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedGitRepo returns the removed IDs of the "git_repo" edge to the GitRepo entity.
-func (m *ProjectMutation) RemovedGitRepoIDs() (ids []int) {
-	for id := range m.removedgit_repo {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// GitRepoIDs returns the "git_repo" edge IDs in the mutation.
-func (m *ProjectMutation) GitRepoIDs() (ids []int) {
-	for id := range m.git_repo {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetGitRepo resets all changes to the "git_repo" edge.
-func (m *ProjectMutation) ResetGitRepo() {
-	m.git_repo = nil
-	m.clearedgit_repo = false
-	m.removedgit_repo = nil
 }
 
 // AddCreatorIDs adds the "creator" edge to the User entity by ids.
@@ -820,12 +416,18 @@ func (m *ProjectMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProjectMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 5)
 	if m.project_name != nil {
 		fields = append(fields, project.FieldProjectName)
 	}
 	if m.describe != nil {
 		fields = append(fields, project.FieldDescribe)
+	}
+	if m.git_url != nil {
+		fields = append(fields, project.FieldGitURL)
+	}
+	if m.dir_path != nil {
+		fields = append(fields, project.FieldDirPath)
 	}
 	if m.created_at != nil {
 		fields = append(fields, project.FieldCreatedAt)
@@ -842,6 +444,10 @@ func (m *ProjectMutation) Field(name string) (ent.Value, bool) {
 		return m.ProjectName()
 	case project.FieldDescribe:
 		return m.Describe()
+	case project.FieldGitURL:
+		return m.GitURL()
+	case project.FieldDirPath:
+		return m.DirPath()
 	case project.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -857,6 +463,10 @@ func (m *ProjectMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldProjectName(ctx)
 	case project.FieldDescribe:
 		return m.OldDescribe(ctx)
+	case project.FieldGitURL:
+		return m.OldGitURL(ctx)
+	case project.FieldDirPath:
+		return m.OldDirPath(ctx)
 	case project.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -881,6 +491,20 @@ func (m *ProjectMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDescribe(v)
+		return nil
+	case project.FieldGitURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetGitURL(v)
+		return nil
+	case project.FieldDirPath:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDirPath(v)
 		return nil
 	case project.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -944,6 +568,12 @@ func (m *ProjectMutation) ResetField(name string) error {
 	case project.FieldDescribe:
 		m.ResetDescribe()
 		return nil
+	case project.FieldGitURL:
+		m.ResetGitURL()
+		return nil
+	case project.FieldDirPath:
+		m.ResetDirPath()
+		return nil
 	case project.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
@@ -953,10 +583,7 @@ func (m *ProjectMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProjectMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.git_repo != nil {
-		edges = append(edges, project.EdgeGitRepo)
-	}
+	edges := make([]string, 0, 1)
 	if m.creator != nil {
 		edges = append(edges, project.EdgeCreator)
 	}
@@ -967,12 +594,6 @@ func (m *ProjectMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case project.EdgeGitRepo:
-		ids := make([]ent.Value, 0, len(m.git_repo))
-		for id := range m.git_repo {
-			ids = append(ids, id)
-		}
-		return ids
 	case project.EdgeCreator:
 		ids := make([]ent.Value, 0, len(m.creator))
 		for id := range m.creator {
@@ -985,10 +606,7 @@ func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProjectMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removedgit_repo != nil {
-		edges = append(edges, project.EdgeGitRepo)
-	}
+	edges := make([]string, 0, 1)
 	if m.removedcreator != nil {
 		edges = append(edges, project.EdgeCreator)
 	}
@@ -999,12 +617,6 @@ func (m *ProjectMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case project.EdgeGitRepo:
-		ids := make([]ent.Value, 0, len(m.removedgit_repo))
-		for id := range m.removedgit_repo {
-			ids = append(ids, id)
-		}
-		return ids
 	case project.EdgeCreator:
 		ids := make([]ent.Value, 0, len(m.removedcreator))
 		for id := range m.removedcreator {
@@ -1017,10 +629,7 @@ func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProjectMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedgit_repo {
-		edges = append(edges, project.EdgeGitRepo)
-	}
+	edges := make([]string, 0, 1)
 	if m.clearedcreator {
 		edges = append(edges, project.EdgeCreator)
 	}
@@ -1031,8 +640,6 @@ func (m *ProjectMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ProjectMutation) EdgeCleared(name string) bool {
 	switch name {
-	case project.EdgeGitRepo:
-		return m.clearedgit_repo
 	case project.EdgeCreator:
 		return m.clearedcreator
 	}
@@ -1051,9 +658,6 @@ func (m *ProjectMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ProjectMutation) ResetEdge(name string) error {
 	switch name {
-	case project.EdgeGitRepo:
-		m.ResetGitRepo()
-		return nil
 	case project.EdgeCreator:
 		m.ResetCreator()
 		return nil

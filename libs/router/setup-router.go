@@ -12,6 +12,7 @@ func SetupRouter() *gin.Engine {
 	r.Use(gin.Logger())
 	r.Use(middleware.Recovery)
 	r.Use(middleware.DataLog)
+	r.Use(middleware.UserMiddleware)
 
 	account_controller.BindController(r)
 

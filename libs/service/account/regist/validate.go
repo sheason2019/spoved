@@ -38,7 +38,7 @@ func RegistValidate(accountInfo *account.AccountInfo) *exception.Exception {
 // 用户名规则
 func validateUsername(name string) *exception.Exception {
 	// 前端URL关键字
-	keywords := []string{"login", "regist", "profile", "service"}
+	keywords := []string{"login", "regist", "profile", "service", "new"}
 	for _, keyword := range keywords {
 		if keyword == name {
 			return exception.New(errors.New("使用了URL关键字作为用户名"))

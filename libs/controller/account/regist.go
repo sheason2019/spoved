@@ -3,8 +3,8 @@ package account_controller
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sheason2019/spoved/libs/idl-lib/account"
+	"github.com/sheason2019/spoved/libs/middleware"
 	regist_service "github.com/sheason2019/spoved/libs/service/account/regist"
-	"github.com/sheason2019/spoved/libs/utils"
 )
 
 func (AccountController) Regist(c *gin.Context, account account.AccountInfo) {
@@ -17,7 +17,7 @@ func (AccountController) Regist(c *gin.Context, account account.AccountInfo) {
 
 func bindRegist(r *gin.Engine) {
 	r.POST(account.AccountServiceDefinition.REGIST_PATH, func(ctx *gin.Context) {
-		props := utils.GetProps[account.AccountInfo](ctx)
+		props := middleware.GetProps[account.AccountInfo](ctx)
 		ac.Regist(ctx, *props)
 		ctx.String(200, "OK")
 	})

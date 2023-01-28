@@ -11,19 +11,16 @@ const (
 	FieldProjectName = "project_name"
 	// FieldDescribe holds the string denoting the describe field in the database.
 	FieldDescribe = "describe"
+	// FieldGitURL holds the string denoting the git_url field in the database.
+	FieldGitURL = "git_url"
+	// FieldDirPath holds the string denoting the dir_path field in the database.
+	FieldDirPath = "dir_path"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
-	// EdgeGitRepo holds the string denoting the git_repo edge name in mutations.
-	EdgeGitRepo = "git_repo"
 	// EdgeCreator holds the string denoting the creator edge name in mutations.
 	EdgeCreator = "creator"
 	// Table holds the table name of the project in the database.
 	Table = "projects"
-	// GitRepoTable is the table that holds the git_repo relation/edge. The primary key declared below.
-	GitRepoTable = "git_repo_projects"
-	// GitRepoInverseTable is the table name for the GitRepo entity.
-	// It exists in this package in order to avoid circular dependency with the "gitrepo" package.
-	GitRepoInverseTable = "git_repos"
 	// CreatorTable is the table that holds the creator relation/edge. The primary key declared below.
 	CreatorTable = "user_projects"
 	// CreatorInverseTable is the table name for the User entity.
@@ -36,13 +33,12 @@ var Columns = []string{
 	FieldID,
 	FieldProjectName,
 	FieldDescribe,
+	FieldGitURL,
+	FieldDirPath,
 	FieldCreatedAt,
 }
 
 var (
-	// GitRepoPrimaryKey and GitRepoColumn2 are the table columns denoting the
-	// primary key for the git_repo relation (M2M).
-	GitRepoPrimaryKey = []string{"git_repo_id", "project_id"}
 	// CreatorPrimaryKey and CreatorColumn2 are the table columns denoting the
 	// primary key for the creator relation (M2M).
 	CreatorPrimaryKey = []string{"user_id", "project_id"}

@@ -10,7 +10,6 @@ import (
 
 	"github.com/sheason2019/spoved/ent/migrate"
 
-	"github.com/sheason2019/spoved/ent/gitrepo"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
 
@@ -24,8 +23,6 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// GitRepo is the client for interacting with the GitRepo builders.
-	GitRepo *GitRepoClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
 	// User is the client for interacting with the User builders.
@@ -43,7 +40,6 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.GitRepo = NewGitRepoClient(c.config)
 	c.Project = NewProjectClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -79,7 +75,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:     ctx,
 		config:  cfg,
-		GitRepo: NewGitRepoClient(cfg),
 		Project: NewProjectClient(cfg),
 		User:    NewUserClient(cfg),
 	}, nil
@@ -101,7 +96,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:     ctx,
 		config:  cfg,
-		GitRepo: NewGitRepoClient(cfg),
 		Project: NewProjectClient(cfg),
 		User:    NewUserClient(cfg),
 	}, nil
@@ -110,7 +104,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		GitRepo.
+//		Project.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -132,7 +126,6 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.GitRepo.Use(hooks...)
 	c.Project.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -140,7 +133,6 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
-	c.GitRepo.Intercept(interceptors...)
 	c.Project.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
@@ -148,148 +140,12 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
-	case *GitRepoMutation:
-		return c.GitRepo.mutate(ctx, m)
 	case *ProjectMutation:
 		return c.Project.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
-	}
-}
-
-// GitRepoClient is a client for the GitRepo schema.
-type GitRepoClient struct {
-	config
-}
-
-// NewGitRepoClient returns a client for the GitRepo from the given config.
-func NewGitRepoClient(c config) *GitRepoClient {
-	return &GitRepoClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `gitrepo.Hooks(f(g(h())))`.
-func (c *GitRepoClient) Use(hooks ...Hook) {
-	c.hooks.GitRepo = append(c.hooks.GitRepo, hooks...)
-}
-
-// Use adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `gitrepo.Intercept(f(g(h())))`.
-func (c *GitRepoClient) Intercept(interceptors ...Interceptor) {
-	c.inters.GitRepo = append(c.inters.GitRepo, interceptors...)
-}
-
-// Create returns a builder for creating a GitRepo entity.
-func (c *GitRepoClient) Create() *GitRepoCreate {
-	mutation := newGitRepoMutation(c.config, OpCreate)
-	return &GitRepoCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of GitRepo entities.
-func (c *GitRepoClient) CreateBulk(builders ...*GitRepoCreate) *GitRepoCreateBulk {
-	return &GitRepoCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for GitRepo.
-func (c *GitRepoClient) Update() *GitRepoUpdate {
-	mutation := newGitRepoMutation(c.config, OpUpdate)
-	return &GitRepoUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *GitRepoClient) UpdateOne(gr *GitRepo) *GitRepoUpdateOne {
-	mutation := newGitRepoMutation(c.config, OpUpdateOne, withGitRepo(gr))
-	return &GitRepoUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *GitRepoClient) UpdateOneID(id int) *GitRepoUpdateOne {
-	mutation := newGitRepoMutation(c.config, OpUpdateOne, withGitRepoID(id))
-	return &GitRepoUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for GitRepo.
-func (c *GitRepoClient) Delete() *GitRepoDelete {
-	mutation := newGitRepoMutation(c.config, OpDelete)
-	return &GitRepoDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *GitRepoClient) DeleteOne(gr *GitRepo) *GitRepoDeleteOne {
-	return c.DeleteOneID(gr.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *GitRepoClient) DeleteOneID(id int) *GitRepoDeleteOne {
-	builder := c.Delete().Where(gitrepo.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &GitRepoDeleteOne{builder}
-}
-
-// Query returns a query builder for GitRepo.
-func (c *GitRepoClient) Query() *GitRepoQuery {
-	return &GitRepoQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeGitRepo},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a GitRepo entity by its id.
-func (c *GitRepoClient) Get(ctx context.Context, id int) (*GitRepo, error) {
-	return c.Query().Where(gitrepo.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *GitRepoClient) GetX(ctx context.Context, id int) *GitRepo {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryProjects queries the projects edge of a GitRepo.
-func (c *GitRepoClient) QueryProjects(gr *GitRepo) *ProjectQuery {
-	query := (&ProjectClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := gr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(gitrepo.Table, gitrepo.FieldID, id),
-			sqlgraph.To(project.Table, project.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, gitrepo.ProjectsTable, gitrepo.ProjectsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(gr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *GitRepoClient) Hooks() []Hook {
-	return c.hooks.GitRepo
-}
-
-// Interceptors returns the client interceptors.
-func (c *GitRepoClient) Interceptors() []Interceptor {
-	return c.inters.GitRepo
-}
-
-func (c *GitRepoClient) mutate(ctx context.Context, m *GitRepoMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&GitRepoCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&GitRepoUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&GitRepoUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&GitRepoDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown GitRepo mutation op: %q", m.Op())
 	}
 }
 
@@ -384,22 +240,6 @@ func (c *ProjectClient) GetX(ctx context.Context, id int) *Project {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryGitRepo queries the git_repo edge of a Project.
-func (c *ProjectClient) QueryGitRepo(pr *Project) *GitRepoQuery {
-	query := (&GitRepoClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := pr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(project.Table, project.FieldID, id),
-			sqlgraph.To(gitrepo.Table, gitrepo.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, project.GitRepoTable, project.GitRepoPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // QueryCreator queries the creator edge of a Project.

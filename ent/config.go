@@ -27,12 +27,10 @@ type config struct {
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		GitRepo []ent.Hook
 		Project []ent.Hook
 		User    []ent.Hook
 	}
 	inters struct {
-		GitRepo []ent.Interceptor
 		Project []ent.Interceptor
 		User    []ent.Interceptor
 	}

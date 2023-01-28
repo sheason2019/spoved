@@ -17,6 +17,8 @@ func (Project) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("project_name"),
 		field.String("describe"),
+		field.String("git_url"),
+		field.String("dir_path"),
 		field.Time("created_at"),
 	}
 }
@@ -24,7 +26,6 @@ func (Project) Fields() []ent.Field {
 // Edges of the User.
 func (Project) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("git_repo", GitRepo.Type).Ref("projects"),
 		edge.From("creator", User.Type).Ref("projects"),
 	}
 }

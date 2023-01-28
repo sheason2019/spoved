@@ -10,7 +10,7 @@
       "lang": "go",
       "targetDir": "libs/idl-lib",
       "method": "server",
-      "packageRoot": "github.com/sheason2019/spoved/idl-lib"
+      "packageRoot": "github.com/sheason2019/spoved/libs/idl-lib"
     }
   ]
 }

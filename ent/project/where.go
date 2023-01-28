@@ -65,6 +65,16 @@ func Describe(v string) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldDescribe, v))
 }
 
+// GitURL applies equality check predicate on the "git_url" field. It's identical to GitURLEQ.
+func GitURL(v string) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldGitURL, v))
+}
+
+// DirPath applies equality check predicate on the "dir_path" field. It's identical to DirPathEQ.
+func DirPath(v string) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldDirPath, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldCreatedAt, v))
@@ -200,6 +210,136 @@ func DescribeContainsFold(v string) predicate.Project {
 	return predicate.Project(sql.FieldContainsFold(FieldDescribe, v))
 }
 
+// GitURLEQ applies the EQ predicate on the "git_url" field.
+func GitURLEQ(v string) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldGitURL, v))
+}
+
+// GitURLNEQ applies the NEQ predicate on the "git_url" field.
+func GitURLNEQ(v string) predicate.Project {
+	return predicate.Project(sql.FieldNEQ(FieldGitURL, v))
+}
+
+// GitURLIn applies the In predicate on the "git_url" field.
+func GitURLIn(vs ...string) predicate.Project {
+	return predicate.Project(sql.FieldIn(FieldGitURL, vs...))
+}
+
+// GitURLNotIn applies the NotIn predicate on the "git_url" field.
+func GitURLNotIn(vs ...string) predicate.Project {
+	return predicate.Project(sql.FieldNotIn(FieldGitURL, vs...))
+}
+
+// GitURLGT applies the GT predicate on the "git_url" field.
+func GitURLGT(v string) predicate.Project {
+	return predicate.Project(sql.FieldGT(FieldGitURL, v))
+}
+
+// GitURLGTE applies the GTE predicate on the "git_url" field.
+func GitURLGTE(v string) predicate.Project {
+	return predicate.Project(sql.FieldGTE(FieldGitURL, v))
+}
+
+// GitURLLT applies the LT predicate on the "git_url" field.
+func GitURLLT(v string) predicate.Project {
+	return predicate.Project(sql.FieldLT(FieldGitURL, v))
+}
+
+// GitURLLTE applies the LTE predicate on the "git_url" field.
+func GitURLLTE(v string) predicate.Project {
+	return predicate.Project(sql.FieldLTE(FieldGitURL, v))
+}
+
+// GitURLContains applies the Contains predicate on the "git_url" field.
+func GitURLContains(v string) predicate.Project {
+	return predicate.Project(sql.FieldContains(FieldGitURL, v))
+}
+
+// GitURLHasPrefix applies the HasPrefix predicate on the "git_url" field.
+func GitURLHasPrefix(v string) predicate.Project {
+	return predicate.Project(sql.FieldHasPrefix(FieldGitURL, v))
+}
+
+// GitURLHasSuffix applies the HasSuffix predicate on the "git_url" field.
+func GitURLHasSuffix(v string) predicate.Project {
+	return predicate.Project(sql.FieldHasSuffix(FieldGitURL, v))
+}
+
+// GitURLEqualFold applies the EqualFold predicate on the "git_url" field.
+func GitURLEqualFold(v string) predicate.Project {
+	return predicate.Project(sql.FieldEqualFold(FieldGitURL, v))
+}
+
+// GitURLContainsFold applies the ContainsFold predicate on the "git_url" field.
+func GitURLContainsFold(v string) predicate.Project {
+	return predicate.Project(sql.FieldContainsFold(FieldGitURL, v))
+}
+
+// DirPathEQ applies the EQ predicate on the "dir_path" field.
+func DirPathEQ(v string) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldDirPath, v))
+}
+
+// DirPathNEQ applies the NEQ predicate on the "dir_path" field.
+func DirPathNEQ(v string) predicate.Project {
+	return predicate.Project(sql.FieldNEQ(FieldDirPath, v))
+}
+
+// DirPathIn applies the In predicate on the "dir_path" field.
+func DirPathIn(vs ...string) predicate.Project {
+	return predicate.Project(sql.FieldIn(FieldDirPath, vs...))
+}
+
+// DirPathNotIn applies the NotIn predicate on the "dir_path" field.
+func DirPathNotIn(vs ...string) predicate.Project {
+	return predicate.Project(sql.FieldNotIn(FieldDirPath, vs...))
+}
+
+// DirPathGT applies the GT predicate on the "dir_path" field.
+func DirPathGT(v string) predicate.Project {
+	return predicate.Project(sql.FieldGT(FieldDirPath, v))
+}
+
+// DirPathGTE applies the GTE predicate on the "dir_path" field.
+func DirPathGTE(v string) predicate.Project {
+	return predicate.Project(sql.FieldGTE(FieldDirPath, v))
+}
+
+// DirPathLT applies the LT predicate on the "dir_path" field.
+func DirPathLT(v string) predicate.Project {
+	return predicate.Project(sql.FieldLT(FieldDirPath, v))
+}
+
+// DirPathLTE applies the LTE predicate on the "dir_path" field.
+func DirPathLTE(v string) predicate.Project {
+	return predicate.Project(sql.FieldLTE(FieldDirPath, v))
+}
+
+// DirPathContains applies the Contains predicate on the "dir_path" field.
+func DirPathContains(v string) predicate.Project {
+	return predicate.Project(sql.FieldContains(FieldDirPath, v))
+}
+
+// DirPathHasPrefix applies the HasPrefix predicate on the "dir_path" field.
+func DirPathHasPrefix(v string) predicate.Project {
+	return predicate.Project(sql.FieldHasPrefix(FieldDirPath, v))
+}
+
+// DirPathHasSuffix applies the HasSuffix predicate on the "dir_path" field.
+func DirPathHasSuffix(v string) predicate.Project {
+	return predicate.Project(sql.FieldHasSuffix(FieldDirPath, v))
+}
+
+// DirPathEqualFold applies the EqualFold predicate on the "dir_path" field.
+func DirPathEqualFold(v string) predicate.Project {
+	return predicate.Project(sql.FieldEqualFold(FieldDirPath, v))
+}
+
+// DirPathContainsFold applies the ContainsFold predicate on the "dir_path" field.
+func DirPathContainsFold(v string) predicate.Project {
+	return predicate.Project(sql.FieldContainsFold(FieldDirPath, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldCreatedAt, v))
@@ -238,33 +378,6 @@ func CreatedAtLT(v time.Time) predicate.Project {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.Project {
 	return predicate.Project(sql.FieldLTE(FieldCreatedAt, v))
-}
-
-// HasGitRepo applies the HasEdge predicate on the "git_repo" edge.
-func HasGitRepo() predicate.Project {
-	return predicate.Project(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, GitRepoTable, GitRepoPrimaryKey...),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasGitRepoWith applies the HasEdge predicate on the "git_repo" edge with a given conditions (other predicates).
-func HasGitRepoWith(preds ...predicate.GitRepo) predicate.Project {
-	return predicate.Project(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(GitRepoInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, GitRepoTable, GitRepoPrimaryKey...),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
 }
 
 // HasCreator applies the HasEdge predicate on the "creator" edge.

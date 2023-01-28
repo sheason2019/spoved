@@ -20,6 +20,10 @@ type Project struct {
 	ProjectName string `json:"project_name,omitempty"`
 	// Describe holds the value of the "describe" field.
 	Describe string `json:"describe,omitempty"`
+	// GitURL holds the value of the "git_url" field.
+	GitURL string `json:"git_url,omitempty"`
+	// DirPath holds the value of the "dir_path" field.
+	DirPath string `json:"dir_path,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -29,28 +33,17 @@ type Project struct {
 
 // ProjectEdges holds the relations/edges for other nodes in the graph.
 type ProjectEdges struct {
-	// GitRepo holds the value of the git_repo edge.
-	GitRepo []*GitRepo `json:"git_repo,omitempty"`
 	// Creator holds the value of the creator edge.
 	Creator []*User `json:"creator,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// GitRepoOrErr returns the GitRepo value or an error if the edge
-// was not loaded in eager-loading.
-func (e ProjectEdges) GitRepoOrErr() ([]*GitRepo, error) {
-	if e.loadedTypes[0] {
-		return e.GitRepo, nil
-	}
-	return nil, &NotLoadedError{edge: "git_repo"}
+	loadedTypes [1]bool
 }
 
 // CreatorOrErr returns the Creator value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProjectEdges) CreatorOrErr() ([]*User, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.Creator, nil
 	}
 	return nil, &NotLoadedError{edge: "creator"}
@@ -63,7 +56,7 @@ func (*Project) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case project.FieldID:
 			values[i] = new(sql.NullInt64)
-		case project.FieldProjectName, project.FieldDescribe:
+		case project.FieldProjectName, project.FieldDescribe, project.FieldGitURL, project.FieldDirPath:
 			values[i] = new(sql.NullString)
 		case project.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -100,6 +93,18 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pr.Describe = value.String
 			}
+		case project.FieldGitURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field git_url", values[i])
+			} else if value.Valid {
+				pr.GitURL = value.String
+			}
+		case project.FieldDirPath:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field dir_path", values[i])
+			} else if value.Valid {
+				pr.DirPath = value.String
+			}
 		case project.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -109,11 +114,6 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
-}
-
-// QueryGitRepo queries the "git_repo" edge of the Project entity.
-func (pr *Project) QueryGitRepo() *GitRepoQuery {
-	return NewProjectClient(pr.config).QueryGitRepo(pr)
 }
 
 // QueryCreator queries the "creator" edge of the Project entity.
@@ -149,6 +149,12 @@ func (pr *Project) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("describe=")
 	builder.WriteString(pr.Describe)
+	builder.WriteString(", ")
+	builder.WriteString("git_url=")
+	builder.WriteString(pr.GitURL)
+	builder.WriteString(", ")
+	builder.WriteString("dir_path=")
+	builder.WriteString(pr.DirPath)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))

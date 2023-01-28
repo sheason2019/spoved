@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/sheason2019/spoved/ent/gitrepo"
 	"github.com/sheason2019/spoved/ent/predicate"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
@@ -42,25 +41,22 @@ func (pu *ProjectUpdate) SetDescribe(s string) *ProjectUpdate {
 	return pu
 }
 
+// SetGitURL sets the "git_url" field.
+func (pu *ProjectUpdate) SetGitURL(s string) *ProjectUpdate {
+	pu.mutation.SetGitURL(s)
+	return pu
+}
+
+// SetDirPath sets the "dir_path" field.
+func (pu *ProjectUpdate) SetDirPath(s string) *ProjectUpdate {
+	pu.mutation.SetDirPath(s)
+	return pu
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (pu *ProjectUpdate) SetCreatedAt(t time.Time) *ProjectUpdate {
 	pu.mutation.SetCreatedAt(t)
 	return pu
-}
-
-// AddGitRepoIDs adds the "git_repo" edge to the GitRepo entity by IDs.
-func (pu *ProjectUpdate) AddGitRepoIDs(ids ...int) *ProjectUpdate {
-	pu.mutation.AddGitRepoIDs(ids...)
-	return pu
-}
-
-// AddGitRepo adds the "git_repo" edges to the GitRepo entity.
-func (pu *ProjectUpdate) AddGitRepo(g ...*GitRepo) *ProjectUpdate {
-	ids := make([]int, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
-	}
-	return pu.AddGitRepoIDs(ids...)
 }
 
 // AddCreatorIDs adds the "creator" edge to the User entity by IDs.
@@ -81,27 +77,6 @@ func (pu *ProjectUpdate) AddCreator(u ...*User) *ProjectUpdate {
 // Mutation returns the ProjectMutation object of the builder.
 func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 	return pu.mutation
-}
-
-// ClearGitRepo clears all "git_repo" edges to the GitRepo entity.
-func (pu *ProjectUpdate) ClearGitRepo() *ProjectUpdate {
-	pu.mutation.ClearGitRepo()
-	return pu
-}
-
-// RemoveGitRepoIDs removes the "git_repo" edge to GitRepo entities by IDs.
-func (pu *ProjectUpdate) RemoveGitRepoIDs(ids ...int) *ProjectUpdate {
-	pu.mutation.RemoveGitRepoIDs(ids...)
-	return pu
-}
-
-// RemoveGitRepo removes "git_repo" edges to GitRepo entities.
-func (pu *ProjectUpdate) RemoveGitRepo(g ...*GitRepo) *ProjectUpdate {
-	ids := make([]int, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
-	}
-	return pu.RemoveGitRepoIDs(ids...)
 }
 
 // ClearCreator clears all "creator" edges to the User entity.
@@ -176,62 +151,14 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.Describe(); ok {
 		_spec.SetField(project.FieldDescribe, field.TypeString, value)
 	}
+	if value, ok := pu.mutation.GitURL(); ok {
+		_spec.SetField(project.FieldGitURL, field.TypeString, value)
+	}
+	if value, ok := pu.mutation.DirPath(); ok {
+		_spec.SetField(project.FieldDirPath, field.TypeString, value)
+	}
 	if value, ok := pu.mutation.CreatedAt(); ok {
 		_spec.SetField(project.FieldCreatedAt, field.TypeTime, value)
-	}
-	if pu.mutation.GitRepoCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   project.GitRepoTable,
-			Columns: project.GitRepoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: gitrepo.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.RemovedGitRepoIDs(); len(nodes) > 0 && !pu.mutation.GitRepoCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   project.GitRepoTable,
-			Columns: project.GitRepoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: gitrepo.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := pu.mutation.GitRepoIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   project.GitRepoTable,
-			Columns: project.GitRepoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: gitrepo.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if pu.mutation.CreatorCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -319,25 +246,22 @@ func (puo *ProjectUpdateOne) SetDescribe(s string) *ProjectUpdateOne {
 	return puo
 }
 
+// SetGitURL sets the "git_url" field.
+func (puo *ProjectUpdateOne) SetGitURL(s string) *ProjectUpdateOne {
+	puo.mutation.SetGitURL(s)
+	return puo
+}
+
+// SetDirPath sets the "dir_path" field.
+func (puo *ProjectUpdateOne) SetDirPath(s string) *ProjectUpdateOne {
+	puo.mutation.SetDirPath(s)
+	return puo
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (puo *ProjectUpdateOne) SetCreatedAt(t time.Time) *ProjectUpdateOne {
 	puo.mutation.SetCreatedAt(t)
 	return puo
-}
-
-// AddGitRepoIDs adds the "git_repo" edge to the GitRepo entity by IDs.
-func (puo *ProjectUpdateOne) AddGitRepoIDs(ids ...int) *ProjectUpdateOne {
-	puo.mutation.AddGitRepoIDs(ids...)
-	return puo
-}
-
-// AddGitRepo adds the "git_repo" edges to the GitRepo entity.
-func (puo *ProjectUpdateOne) AddGitRepo(g ...*GitRepo) *ProjectUpdateOne {
-	ids := make([]int, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
-	}
-	return puo.AddGitRepoIDs(ids...)
 }
 
 // AddCreatorIDs adds the "creator" edge to the User entity by IDs.
@@ -358,27 +282,6 @@ func (puo *ProjectUpdateOne) AddCreator(u ...*User) *ProjectUpdateOne {
 // Mutation returns the ProjectMutation object of the builder.
 func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return puo.mutation
-}
-
-// ClearGitRepo clears all "git_repo" edges to the GitRepo entity.
-func (puo *ProjectUpdateOne) ClearGitRepo() *ProjectUpdateOne {
-	puo.mutation.ClearGitRepo()
-	return puo
-}
-
-// RemoveGitRepoIDs removes the "git_repo" edge to GitRepo entities by IDs.
-func (puo *ProjectUpdateOne) RemoveGitRepoIDs(ids ...int) *ProjectUpdateOne {
-	puo.mutation.RemoveGitRepoIDs(ids...)
-	return puo
-}
-
-// RemoveGitRepo removes "git_repo" edges to GitRepo entities.
-func (puo *ProjectUpdateOne) RemoveGitRepo(g ...*GitRepo) *ProjectUpdateOne {
-	ids := make([]int, len(g))
-	for i := range g {
-		ids[i] = g[i].ID
-	}
-	return puo.RemoveGitRepoIDs(ids...)
 }
 
 // ClearCreator clears all "creator" edges to the User entity.
@@ -477,62 +380,14 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	if value, ok := puo.mutation.Describe(); ok {
 		_spec.SetField(project.FieldDescribe, field.TypeString, value)
 	}
+	if value, ok := puo.mutation.GitURL(); ok {
+		_spec.SetField(project.FieldGitURL, field.TypeString, value)
+	}
+	if value, ok := puo.mutation.DirPath(); ok {
+		_spec.SetField(project.FieldDirPath, field.TypeString, value)
+	}
 	if value, ok := puo.mutation.CreatedAt(); ok {
 		_spec.SetField(project.FieldCreatedAt, field.TypeTime, value)
-	}
-	if puo.mutation.GitRepoCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   project.GitRepoTable,
-			Columns: project.GitRepoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: gitrepo.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.RemovedGitRepoIDs(); len(nodes) > 0 && !puo.mutation.GitRepoCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   project.GitRepoTable,
-			Columns: project.GitRepoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: gitrepo.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := puo.mutation.GitRepoIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   project.GitRepoTable,
-			Columns: project.GitRepoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: gitrepo.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if puo.mutation.CreatorCleared() {
 		edge := &sqlgraph.EdgeSpec{
