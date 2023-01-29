@@ -31,16 +31,16 @@ func validate(proj *project_idl.Project, creator *ent.User) *exception.Exception
 // 检查项目名称是否重复
 func checkRepeat(proj *project_idl.Project, creator *ent.User) *exception.Exception {
 	client := dbc.GetClient()
-	projs, err := client.Project.Query().
+	count, err := client.Project.Query().
 		Where(project.ProjectNameEQ(proj.ProjectName)).
 		Where(project.HasCreatorWith(user.IDEQ(creator.ID))).
-		All(context.Background())
+		Count(context.Background())
 
 	if err != nil {
 		return exception.New(err)
 	}
 
-	if len(projs) > 0 {
+	if count > 0 {
 		return exception.New(errors.New("项目名称重复"))
 	}
 

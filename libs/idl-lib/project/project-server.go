@@ -8,13 +8,16 @@ import (
 type ProjectApi interface {
 	GetProjects(ctx *gin.Context, pagination common.Pagination) GetProjectsResponse
 	PostProject(ctx *gin.Context, project Project) Project
+	GetProject(ctx *gin.Context, payload GetProjectPayload) Project
 }
 type _projectApiDefinition struct {
 	GET_PROJECTS_PATH string
 	POST_PROJECT_PATH string
+	GET_PROJECT_PATH  string
 }
 
 var ProjectApiDefinition = _projectApiDefinition{
 	GET_PROJECTS_PATH: "/ProjectApi.Projects",
 	POST_PROJECT_PATH: "/ProjectApi.Project",
+	GET_PROJECT_PATH:  "/ProjectApi.Project",
 }

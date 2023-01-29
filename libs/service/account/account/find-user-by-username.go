@@ -12,17 +12,16 @@ import (
 func FindUserByUsername(username string) (*ent.User, *exception.Exception) {
 	client := dbc.GetClient()
 
-	users, err := client.User.
+	user, err := client.User.
 		Query().
 		Where(user.UsernameEQ(username)).
-		Limit(1).
-		All(context.Background())
+		First(context.Background())
+	if ent.IsNotFound(err) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, exception.New(err)
 	}
-	if len(users) > 0 {
-		return users[0], nil
-	}
 
-	return nil, nil
+	return user, nil
 }

@@ -16,3 +16,8 @@ type GetProjectsResponse struct {
 	Projects   []Project         `json:"projects" form:"projects"`
 	Pagination common.Pagination `json:"pagination" form:"pagination"`
 }
+
+type GetProjectPayload struct {
+	Username    string `json:"username" form:"username"`
+	ProjectName string `json:"projectName" form:"projectName"`
+}

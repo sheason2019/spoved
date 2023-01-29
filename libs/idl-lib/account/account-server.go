@@ -12,17 +12,17 @@ type AccountApi interface {
 	GetCurrentUser(ctx *gin.Context) User
 }
 type _accountApiDefinition struct {
+	GET_USERNAME_REPEAT_PATH string
+	GET_CURRENT_USER_PATH    string
 	GET_ACCOUNT_CRYPTO_PATH  string
 	LOGIN_PATH               string
 	REGIST_PATH              string
-	GET_USERNAME_REPEAT_PATH string
-	GET_CURRENT_USER_PATH    string
 }
 
 var AccountApiDefinition = _accountApiDefinition{
+	GET_USERNAME_REPEAT_PATH: "/AccountApi.UsernameRepeat",
+	GET_CURRENT_USER_PATH:    "/AccountApi.CurrentUser",
 	GET_ACCOUNT_CRYPTO_PATH:  "/AccountApi.AccountCrypto",
 	LOGIN_PATH:               "/AccountApi.Login",
 	REGIST_PATH:              "/AccountApi.Regist",
-	GET_USERNAME_REPEAT_PATH: "/AccountApi.UsernameRepeat",
-	GET_CURRENT_USER_PATH:    "/AccountApi.CurrentUser",
 }
