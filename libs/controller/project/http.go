@@ -11,4 +11,5 @@ var pc project.ProjectApi = ProjectController{}
 
 func BindProjectController(r *gin.Engine) {
 	bindPostProject(r)
+	bindGetProjects(r)
 }

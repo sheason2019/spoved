@@ -18,7 +18,7 @@ func TestRegist(t *testing.T) {
 	router := router.SetupRouter()
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", account.AccountApiDefinition.ACCOUNT_CRYPTO_PATH, nil)
+	req, _ := http.NewRequest("GET", account.AccountApiDefinition.GET_ACCOUNT_CRYPTO_PATH, nil)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, w.Code, 200)

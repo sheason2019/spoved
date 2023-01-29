@@ -18,7 +18,7 @@ func (AccountController) GetUsernameRepeat(ctx *gin.Context, payload account.Get
 }
 
 func bindGetUsernameRepeat(r *gin.Engine) {
-	r.GET(account.AccountApiDefinition.USERNAME_REPEAT_PATH, func(ctx *gin.Context) {
+	r.GET(account.AccountApiDefinition.GET_USERNAME_REPEAT_PATH, func(ctx *gin.Context) {
 		props := middleware.GetProps[account.GetUsernameRepeatPayload](ctx)
 		ctx.JSON(200, ac.GetUsernameRepeat(ctx, *props))
 	})
