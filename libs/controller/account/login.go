@@ -19,7 +19,7 @@ func (AccountController) Login(c *gin.Context, info account.AccountInfo) account
 }
 
 func bindLogin(r *gin.Engine) {
-	r.POST(account.AccountServiceDefinition.LOGIN_PATH, func(ctx *gin.Context) {
+	r.POST(account.AccountApiDefinition.LOGIN_PATH, func(ctx *gin.Context) {
 		props := middleware.GetProps[account.AccountInfo](ctx)
 		ctx.JSON(200, ac.Login(ctx, *props))
 	})

@@ -2,6 +2,8 @@ package project_service
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/sheason2019/spoved/ent"
 	"github.com/sheason2019/spoved/exceptions/exception"
@@ -10,8 +12,8 @@ import (
 )
 
 func CreateProject(proj *project_idl.Project, creator *ent.User) (*ent.Project, *exception.Exception) {
-	// 验证参数是否合法
-	e := validate(proj)
+	// 校验逻辑
+	e := validate(proj, creator)
 	if e != nil {
 		return nil, e.Wrap()
 	}
@@ -23,6 +25,8 @@ func CreateProject(proj *project_idl.Project, creator *ent.User) (*ent.Project, 
 		SetProjectName(proj.ProjectName).
 		SetDescribe(proj.Describe).
 		SetGitURL(proj.GitUrl).
+		SetDirPath(fmt.Sprintf("/repos/%s/%s", creator.Username, proj.ProjectName)).
+		SetCreatedAt(time.Now()).
 		AddCreator(creator).
 		Save(context.Background())
 

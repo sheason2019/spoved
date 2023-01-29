@@ -7,7 +7,7 @@ import (
 
 type AccountController struct{}
 
-var ac account.AccountService = AccountController{}
+var ac account.AccountApi = AccountController{}
 
 func BindController(r *gin.Engine) {
 	bindGetAccountCrypto(r)

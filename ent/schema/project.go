@@ -18,7 +18,7 @@ func (Project) Fields() []ent.Field {
 		field.String("project_name"),
 		field.String("describe"),
 		field.String("git_url"),
-		field.String("dir_path"),
+		field.String("dir_path").Unique(),
 		field.Time("created_at"),
 	}
 }

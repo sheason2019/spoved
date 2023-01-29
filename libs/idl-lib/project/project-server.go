@@ -5,16 +5,16 @@ import (
 	common "github.com/sheason2019/spoved/libs/idl-lib/common"
 )
 
-type ProjectController interface {
+type ProjectApi interface {
 	GetProjects(ctx *gin.Context, pagination common.Pagination) GetProjectsResponse
 	PostProject(ctx *gin.Context, project Project) Project
 }
-type _projectControllerDefinition struct {
-	PROJECT_PATH  string
+type _projectApiDefinition struct {
 	PROJECTS_PATH string
+	PROJECT_PATH  string
 }
 
-var ProjectControllerDefinition = _projectControllerDefinition{
-	PROJECT_PATH:  "/ProjectController.Project",
-	PROJECTS_PATH: "/ProjectController.Projects",
+var ProjectApiDefinition = _projectApiDefinition{
+	PROJECTS_PATH: "/ProjectApi.Projects",
+	PROJECT_PATH:  "/ProjectApi.Project",
 }

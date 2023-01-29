@@ -18,7 +18,7 @@ func TestRegist(t *testing.T) {
 	router := router.SetupRouter()
 
 	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", account.AccountServiceDefinition.ACCOUNT_CRYPTO_PATH, nil)
+	req, _ := http.NewRequest("GET", account.AccountApiDefinition.ACCOUNT_CRYPTO_PATH, nil)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, w.Code, 200)
@@ -49,7 +49,7 @@ func TestRegist(t *testing.T) {
 	body := bytes.NewReader(buf)
 
 	w = httptest.NewRecorder()
-	req, _ = http.NewRequest("POST", account.AccountServiceDefinition.REGIST_PATH, body)
+	req, _ = http.NewRequest("POST", account.AccountApiDefinition.REGIST_PATH, body)
 	router.ServeHTTP(w, req)
 
 	// testUser1已存在

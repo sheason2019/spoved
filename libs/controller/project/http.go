@@ -7,7 +7,7 @@ import (
 
 type ProjectController struct{}
 
-var pc project.ProjectController = ProjectController{}
+var pc project.ProjectApi = ProjectController{}
 
 func BindProjectController(r *gin.Engine) {
 	bindPostProject(r)
