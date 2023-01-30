@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/sheason2019/spoved/ent/compilerecord"
 	"github.com/sheason2019/spoved/ent/predicate"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
@@ -59,6 +60,21 @@ func (pu *ProjectUpdate) SetCreatedAt(t time.Time) *ProjectUpdate {
 	return pu
 }
 
+// AddCompileRecordIDs adds the "compile_records" edge to the CompileRecord entity by IDs.
+func (pu *ProjectUpdate) AddCompileRecordIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.AddCompileRecordIDs(ids...)
+	return pu
+}
+
+// AddCompileRecords adds the "compile_records" edges to the CompileRecord entity.
+func (pu *ProjectUpdate) AddCompileRecords(c ...*CompileRecord) *ProjectUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return pu.AddCompileRecordIDs(ids...)
+}
+
 // AddCreatorIDs adds the "creator" edge to the User entity by IDs.
 func (pu *ProjectUpdate) AddCreatorIDs(ids ...int) *ProjectUpdate {
 	pu.mutation.AddCreatorIDs(ids...)
@@ -77,6 +93,27 @@ func (pu *ProjectUpdate) AddCreator(u ...*User) *ProjectUpdate {
 // Mutation returns the ProjectMutation object of the builder.
 func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 	return pu.mutation
+}
+
+// ClearCompileRecords clears all "compile_records" edges to the CompileRecord entity.
+func (pu *ProjectUpdate) ClearCompileRecords() *ProjectUpdate {
+	pu.mutation.ClearCompileRecords()
+	return pu
+}
+
+// RemoveCompileRecordIDs removes the "compile_records" edge to CompileRecord entities by IDs.
+func (pu *ProjectUpdate) RemoveCompileRecordIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.RemoveCompileRecordIDs(ids...)
+	return pu
+}
+
+// RemoveCompileRecords removes "compile_records" edges to CompileRecord entities.
+func (pu *ProjectUpdate) RemoveCompileRecords(c ...*CompileRecord) *ProjectUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return pu.RemoveCompileRecordIDs(ids...)
 }
 
 // ClearCreator clears all "creator" edges to the User entity.
@@ -159,6 +196,60 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := pu.mutation.CreatedAt(); ok {
 		_spec.SetField(project.FieldCreatedAt, field.TypeTime, value)
+	}
+	if pu.mutation.CompileRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   project.CompileRecordsTable,
+			Columns: project.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedCompileRecordsIDs(); len(nodes) > 0 && !pu.mutation.CompileRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   project.CompileRecordsTable,
+			Columns: project.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.CompileRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   project.CompileRecordsTable,
+			Columns: project.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if pu.mutation.CreatorCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -264,6 +355,21 @@ func (puo *ProjectUpdateOne) SetCreatedAt(t time.Time) *ProjectUpdateOne {
 	return puo
 }
 
+// AddCompileRecordIDs adds the "compile_records" edge to the CompileRecord entity by IDs.
+func (puo *ProjectUpdateOne) AddCompileRecordIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.AddCompileRecordIDs(ids...)
+	return puo
+}
+
+// AddCompileRecords adds the "compile_records" edges to the CompileRecord entity.
+func (puo *ProjectUpdateOne) AddCompileRecords(c ...*CompileRecord) *ProjectUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return puo.AddCompileRecordIDs(ids...)
+}
+
 // AddCreatorIDs adds the "creator" edge to the User entity by IDs.
 func (puo *ProjectUpdateOne) AddCreatorIDs(ids ...int) *ProjectUpdateOne {
 	puo.mutation.AddCreatorIDs(ids...)
@@ -282,6 +388,27 @@ func (puo *ProjectUpdateOne) AddCreator(u ...*User) *ProjectUpdateOne {
 // Mutation returns the ProjectMutation object of the builder.
 func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return puo.mutation
+}
+
+// ClearCompileRecords clears all "compile_records" edges to the CompileRecord entity.
+func (puo *ProjectUpdateOne) ClearCompileRecords() *ProjectUpdateOne {
+	puo.mutation.ClearCompileRecords()
+	return puo
+}
+
+// RemoveCompileRecordIDs removes the "compile_records" edge to CompileRecord entities by IDs.
+func (puo *ProjectUpdateOne) RemoveCompileRecordIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.RemoveCompileRecordIDs(ids...)
+	return puo
+}
+
+// RemoveCompileRecords removes "compile_records" edges to CompileRecord entities.
+func (puo *ProjectUpdateOne) RemoveCompileRecords(c ...*CompileRecord) *ProjectUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return puo.RemoveCompileRecordIDs(ids...)
 }
 
 // ClearCreator clears all "creator" edges to the User entity.
@@ -388,6 +515,60 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 	}
 	if value, ok := puo.mutation.CreatedAt(); ok {
 		_spec.SetField(project.FieldCreatedAt, field.TypeTime, value)
+	}
+	if puo.mutation.CompileRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   project.CompileRecordsTable,
+			Columns: project.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedCompileRecordsIDs(); len(nodes) > 0 && !puo.mutation.CompileRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   project.CompileRecordsTable,
+			Columns: project.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.CompileRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   project.CompileRecordsTable,
+			Columns: project.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if puo.mutation.CreatorCleared() {
 		edge := &sqlgraph.EdgeSpec{

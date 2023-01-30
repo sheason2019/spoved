@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/sheason2019/spoved/ent/compilerecord"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
 )
@@ -49,6 +50,21 @@ func (pc *ProjectCreate) SetDirPath(s string) *ProjectCreate {
 func (pc *ProjectCreate) SetCreatedAt(t time.Time) *ProjectCreate {
 	pc.mutation.SetCreatedAt(t)
 	return pc
+}
+
+// AddCompileRecordIDs adds the "compile_records" edge to the CompileRecord entity by IDs.
+func (pc *ProjectCreate) AddCompileRecordIDs(ids ...int) *ProjectCreate {
+	pc.mutation.AddCompileRecordIDs(ids...)
+	return pc
+}
+
+// AddCompileRecords adds the "compile_records" edges to the CompileRecord entity.
+func (pc *ProjectCreate) AddCompileRecords(c ...*CompileRecord) *ProjectCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return pc.AddCompileRecordIDs(ids...)
 }
 
 // AddCreatorIDs adds the "creator" edge to the User entity by IDs.
@@ -166,6 +182,25 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.CreatedAt(); ok {
 		_spec.SetField(project.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := pc.mutation.CompileRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   project.CompileRecordsTable,
+			Columns: project.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := pc.mutation.CreatorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

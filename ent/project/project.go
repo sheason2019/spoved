@@ -17,10 +17,17 @@ const (
 	FieldDirPath = "dir_path"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgeCompileRecords holds the string denoting the compile_records edge name in mutations.
+	EdgeCompileRecords = "compile_records"
 	// EdgeCreator holds the string denoting the creator edge name in mutations.
 	EdgeCreator = "creator"
 	// Table holds the table name of the project in the database.
 	Table = "projects"
+	// CompileRecordsTable is the table that holds the compile_records relation/edge. The primary key declared below.
+	CompileRecordsTable = "project_compile_records"
+	// CompileRecordsInverseTable is the table name for the CompileRecord entity.
+	// It exists in this package in order to avoid circular dependency with the "compilerecord" package.
+	CompileRecordsInverseTable = "compile_records"
 	// CreatorTable is the table that holds the creator relation/edge. The primary key declared below.
 	CreatorTable = "user_projects"
 	// CreatorInverseTable is the table name for the User entity.
@@ -39,6 +46,9 @@ var Columns = []string{
 }
 
 var (
+	// CompileRecordsPrimaryKey and CompileRecordsColumn2 are the table columns denoting the
+	// primary key for the compile_records relation (M2M).
+	CompileRecordsPrimaryKey = []string{"project_id", "compile_record_id"}
 	// CreatorPrimaryKey and CreatorColumn2 are the table columns denoting the
 	// primary key for the creator relation (M2M).
 	CreatorPrimaryKey = []string{"user_id", "project_id"}

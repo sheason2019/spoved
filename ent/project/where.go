@@ -380,6 +380,33 @@ func CreatedAtLTE(v time.Time) predicate.Project {
 	return predicate.Project(sql.FieldLTE(FieldCreatedAt, v))
 }
 
+// HasCompileRecords applies the HasEdge predicate on the "compile_records" edge.
+func HasCompileRecords() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, CompileRecordsTable, CompileRecordsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCompileRecordsWith applies the HasEdge predicate on the "compile_records" edge with a given conditions (other predicates).
+func HasCompileRecordsWith(preds ...predicate.CompileRecord) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(CompileRecordsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, CompileRecordsTable, CompileRecordsPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasCreator applies the HasEdge predicate on the "creator" edge.
 func HasCreator() predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {

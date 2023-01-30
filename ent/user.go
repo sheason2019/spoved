@@ -33,9 +33,11 @@ type User struct {
 type UserEdges struct {
 	// Projects holds the value of the projects edge.
 	Projects []*Project `json:"projects,omitempty"`
+	// CompileRecords holds the value of the compile_records edge.
+	CompileRecords []*CompileRecord `json:"compile_records,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // ProjectsOrErr returns the Projects value or an error if the edge
@@ -45,6 +47,15 @@ func (e UserEdges) ProjectsOrErr() ([]*Project, error) {
 		return e.Projects, nil
 	}
 	return nil, &NotLoadedError{edge: "projects"}
+}
+
+// CompileRecordsOrErr returns the CompileRecords value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) CompileRecordsOrErr() ([]*CompileRecord, error) {
+	if e.loadedTypes[1] {
+		return e.CompileRecords, nil
+	}
+	return nil, &NotLoadedError{edge: "compile_records"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -111,6 +122,11 @@ func (u *User) assignValues(columns []string, values []any) error {
 // QueryProjects queries the "projects" edge of the User entity.
 func (u *User) QueryProjects() *ProjectQuery {
 	return NewUserClient(u.config).QueryProjects(u)
+}
+
+// QueryCompileRecords queries the "compile_records" edge of the User entity.
+func (u *User) QueryCompileRecords() *CompileRecordQuery {
+	return NewUserClient(u.config).QueryCompileRecords(u)
 }
 
 // Update returns a builder for updating this User.

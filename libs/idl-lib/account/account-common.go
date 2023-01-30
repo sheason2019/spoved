@@ -1,9 +1,5 @@
 package account
 
-type GetUsernameRepeatPayload struct {
-	Name string `json:"name" form:"name"`
-}
-
 type User struct {
 	Username string `json:"username" form:"username"`
 }
@@ -25,4 +21,8 @@ type LoginResponse struct {
 
 type GetUsernameRepeatResponse struct {
 	Repeat bool `json:"repeat" form:"repeat"`
+}
+
+type GetUsernameRepeatPayload struct {
+	Name string `json:"name" form:"name"`
 }

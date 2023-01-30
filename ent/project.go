@@ -33,17 +33,28 @@ type Project struct {
 
 // ProjectEdges holds the relations/edges for other nodes in the graph.
 type ProjectEdges struct {
+	// CompileRecords holds the value of the compile_records edge.
+	CompileRecords []*CompileRecord `json:"compile_records,omitempty"`
 	// Creator holds the value of the creator edge.
 	Creator []*User `json:"creator,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// CompileRecordsOrErr returns the CompileRecords value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) CompileRecordsOrErr() ([]*CompileRecord, error) {
+	if e.loadedTypes[0] {
+		return e.CompileRecords, nil
+	}
+	return nil, &NotLoadedError{edge: "compile_records"}
 }
 
 // CreatorOrErr returns the Creator value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProjectEdges) CreatorOrErr() ([]*User, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Creator, nil
 	}
 	return nil, &NotLoadedError{edge: "creator"}
@@ -114,6 +125,11 @@ func (pr *Project) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
+}
+
+// QueryCompileRecords queries the "compile_records" edge of the Project entity.
+func (pr *Project) QueryCompileRecords() *CompileRecordQuery {
+	return NewProjectClient(pr.config).QueryCompileRecords(pr)
 }
 
 // QueryCreator queries the "creator" edge of the Project entity.

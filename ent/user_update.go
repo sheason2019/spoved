@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/sheason2019/spoved/ent/compilerecord"
 	"github.com/sheason2019/spoved/ent/predicate"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
@@ -68,6 +69,21 @@ func (uu *UserUpdate) AddProjects(p ...*Project) *UserUpdate {
 	return uu.AddProjectIDs(ids...)
 }
 
+// AddCompileRecordIDs adds the "compile_records" edge to the CompileRecord entity by IDs.
+func (uu *UserUpdate) AddCompileRecordIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddCompileRecordIDs(ids...)
+	return uu
+}
+
+// AddCompileRecords adds the "compile_records" edges to the CompileRecord entity.
+func (uu *UserUpdate) AddCompileRecords(c ...*CompileRecord) *UserUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.AddCompileRecordIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -92,6 +108,27 @@ func (uu *UserUpdate) RemoveProjects(p ...*Project) *UserUpdate {
 		ids[i] = p[i].ID
 	}
 	return uu.RemoveProjectIDs(ids...)
+}
+
+// ClearCompileRecords clears all "compile_records" edges to the CompileRecord entity.
+func (uu *UserUpdate) ClearCompileRecords() *UserUpdate {
+	uu.mutation.ClearCompileRecords()
+	return uu
+}
+
+// RemoveCompileRecordIDs removes the "compile_records" edge to CompileRecord entities by IDs.
+func (uu *UserUpdate) RemoveCompileRecordIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveCompileRecordIDs(ids...)
+	return uu
+}
+
+// RemoveCompileRecords removes "compile_records" edges to CompileRecord entities.
+func (uu *UserUpdate) RemoveCompileRecords(c ...*CompileRecord) *UserUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.RemoveCompileRecordIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -205,6 +242,60 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.CompileRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.CompileRecordsTable,
+			Columns: user.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedCompileRecordsIDs(); len(nodes) > 0 && !uu.mutation.CompileRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.CompileRecordsTable,
+			Columns: user.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.CompileRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.CompileRecordsTable,
+			Columns: user.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -264,6 +355,21 @@ func (uuo *UserUpdateOne) AddProjects(p ...*Project) *UserUpdateOne {
 	return uuo.AddProjectIDs(ids...)
 }
 
+// AddCompileRecordIDs adds the "compile_records" edge to the CompileRecord entity by IDs.
+func (uuo *UserUpdateOne) AddCompileRecordIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddCompileRecordIDs(ids...)
+	return uuo
+}
+
+// AddCompileRecords adds the "compile_records" edges to the CompileRecord entity.
+func (uuo *UserUpdateOne) AddCompileRecords(c ...*CompileRecord) *UserUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.AddCompileRecordIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -288,6 +394,27 @@ func (uuo *UserUpdateOne) RemoveProjects(p ...*Project) *UserUpdateOne {
 		ids[i] = p[i].ID
 	}
 	return uuo.RemoveProjectIDs(ids...)
+}
+
+// ClearCompileRecords clears all "compile_records" edges to the CompileRecord entity.
+func (uuo *UserUpdateOne) ClearCompileRecords() *UserUpdateOne {
+	uuo.mutation.ClearCompileRecords()
+	return uuo
+}
+
+// RemoveCompileRecordIDs removes the "compile_records" edge to CompileRecord entities by IDs.
+func (uuo *UserUpdateOne) RemoveCompileRecordIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveCompileRecordIDs(ids...)
+	return uuo
+}
+
+// RemoveCompileRecords removes "compile_records" edges to CompileRecord entities.
+func (uuo *UserUpdateOne) RemoveCompileRecords(c ...*CompileRecord) *UserUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.RemoveCompileRecordIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -417,6 +544,60 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.CompileRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.CompileRecordsTable,
+			Columns: user.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedCompileRecordsIDs(); len(nodes) > 0 && !uuo.mutation.CompileRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.CompileRecordsTable,
+			Columns: user.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.CompileRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.CompileRecordsTable,
+			Columns: user.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
 				},
 			},
 		}

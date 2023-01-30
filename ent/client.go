@@ -10,6 +10,7 @@ import (
 
 	"github.com/sheason2019/spoved/ent/migrate"
 
+	"github.com/sheason2019/spoved/ent/compilerecord"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
 
@@ -23,6 +24,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// CompileRecord is the client for interacting with the CompileRecord builders.
+	CompileRecord *CompileRecordClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
 	// User is the client for interacting with the User builders.
@@ -40,6 +43,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.CompileRecord = NewCompileRecordClient(c.config)
 	c.Project = NewProjectClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -73,10 +77,11 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Project: NewProjectClient(cfg),
-		User:    NewUserClient(cfg),
+		ctx:           ctx,
+		config:        cfg,
+		CompileRecord: NewCompileRecordClient(cfg),
+		Project:       NewProjectClient(cfg),
+		User:          NewUserClient(cfg),
 	}, nil
 }
 
@@ -94,17 +99,18 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Project: NewProjectClient(cfg),
-		User:    NewUserClient(cfg),
+		ctx:           ctx,
+		config:        cfg,
+		CompileRecord: NewCompileRecordClient(cfg),
+		Project:       NewProjectClient(cfg),
+		User:          NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Project.
+//		CompileRecord.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -126,6 +132,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.CompileRecord.Use(hooks...)
 	c.Project.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -133,6 +140,7 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.CompileRecord.Intercept(interceptors...)
 	c.Project.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
@@ -140,12 +148,164 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *CompileRecordMutation:
+		return c.CompileRecord.mutate(ctx, m)
 	case *ProjectMutation:
 		return c.Project.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// CompileRecordClient is a client for the CompileRecord schema.
+type CompileRecordClient struct {
+	config
+}
+
+// NewCompileRecordClient returns a client for the CompileRecord from the given config.
+func NewCompileRecordClient(c config) *CompileRecordClient {
+	return &CompileRecordClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `compilerecord.Hooks(f(g(h())))`.
+func (c *CompileRecordClient) Use(hooks ...Hook) {
+	c.hooks.CompileRecord = append(c.hooks.CompileRecord, hooks...)
+}
+
+// Use adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `compilerecord.Intercept(f(g(h())))`.
+func (c *CompileRecordClient) Intercept(interceptors ...Interceptor) {
+	c.inters.CompileRecord = append(c.inters.CompileRecord, interceptors...)
+}
+
+// Create returns a builder for creating a CompileRecord entity.
+func (c *CompileRecordClient) Create() *CompileRecordCreate {
+	mutation := newCompileRecordMutation(c.config, OpCreate)
+	return &CompileRecordCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CompileRecord entities.
+func (c *CompileRecordClient) CreateBulk(builders ...*CompileRecordCreate) *CompileRecordCreateBulk {
+	return &CompileRecordCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CompileRecord.
+func (c *CompileRecordClient) Update() *CompileRecordUpdate {
+	mutation := newCompileRecordMutation(c.config, OpUpdate)
+	return &CompileRecordUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CompileRecordClient) UpdateOne(cr *CompileRecord) *CompileRecordUpdateOne {
+	mutation := newCompileRecordMutation(c.config, OpUpdateOne, withCompileRecord(cr))
+	return &CompileRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CompileRecordClient) UpdateOneID(id int) *CompileRecordUpdateOne {
+	mutation := newCompileRecordMutation(c.config, OpUpdateOne, withCompileRecordID(id))
+	return &CompileRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CompileRecord.
+func (c *CompileRecordClient) Delete() *CompileRecordDelete {
+	mutation := newCompileRecordMutation(c.config, OpDelete)
+	return &CompileRecordDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CompileRecordClient) DeleteOne(cr *CompileRecord) *CompileRecordDeleteOne {
+	return c.DeleteOneID(cr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CompileRecordClient) DeleteOneID(id int) *CompileRecordDeleteOne {
+	builder := c.Delete().Where(compilerecord.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CompileRecordDeleteOne{builder}
+}
+
+// Query returns a query builder for CompileRecord.
+func (c *CompileRecordClient) Query() *CompileRecordQuery {
+	return &CompileRecordQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCompileRecord},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a CompileRecord entity by its id.
+func (c *CompileRecordClient) Get(ctx context.Context, id int) (*CompileRecord, error) {
+	return c.Query().Where(compilerecord.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CompileRecordClient) GetX(ctx context.Context, id int) *CompileRecord {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOperator queries the operator edge of a CompileRecord.
+func (c *CompileRecordClient) QueryOperator(cr *CompileRecord) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := cr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(compilerecord.Table, compilerecord.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, compilerecord.OperatorTable, compilerecord.OperatorPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(cr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProject queries the project edge of a CompileRecord.
+func (c *CompileRecordClient) QueryProject(cr *CompileRecord) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := cr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(compilerecord.Table, compilerecord.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, compilerecord.ProjectTable, compilerecord.ProjectPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(cr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *CompileRecordClient) Hooks() []Hook {
+	return c.hooks.CompileRecord
+}
+
+// Interceptors returns the client interceptors.
+func (c *CompileRecordClient) Interceptors() []Interceptor {
+	return c.inters.CompileRecord
+}
+
+func (c *CompileRecordClient) mutate(ctx context.Context, m *CompileRecordMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CompileRecordCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CompileRecordUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CompileRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CompileRecordDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown CompileRecord mutation op: %q", m.Op())
 	}
 }
 
@@ -240,6 +400,22 @@ func (c *ProjectClient) GetX(ctx context.Context, id int) *Project {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryCompileRecords queries the compile_records edge of a Project.
+func (c *ProjectClient) QueryCompileRecords(pr *Project) *CompileRecordQuery {
+	query := (&CompileRecordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(compilerecord.Table, compilerecord.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, project.CompileRecordsTable, project.CompileRecordsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryCreator queries the creator edge of a Project.
@@ -385,6 +561,22 @@ func (c *UserClient) QueryProjects(u *User) *ProjectQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, user.ProjectsTable, user.ProjectsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCompileRecords queries the compile_records edge of a User.
+func (c *UserClient) QueryCompileRecords(u *User) *CompileRecordQuery {
+	query := (&CompileRecordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(compilerecord.Table, compilerecord.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.CompileRecordsTable, user.CompileRecordsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

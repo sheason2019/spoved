@@ -17,6 +17,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeProjects holds the string denoting the projects edge name in mutations.
 	EdgeProjects = "projects"
+	// EdgeCompileRecords holds the string denoting the compile_records edge name in mutations.
+	EdgeCompileRecords = "compile_records"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// ProjectsTable is the table that holds the projects relation/edge. The primary key declared below.
@@ -24,6 +26,11 @@ const (
 	// ProjectsInverseTable is the table name for the Project entity.
 	// It exists in this package in order to avoid circular dependency with the "project" package.
 	ProjectsInverseTable = "projects"
+	// CompileRecordsTable is the table that holds the compile_records relation/edge. The primary key declared below.
+	CompileRecordsTable = "user_compile_records"
+	// CompileRecordsInverseTable is the table name for the CompileRecord entity.
+	// It exists in this package in order to avoid circular dependency with the "compilerecord" package.
+	CompileRecordsInverseTable = "compile_records"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -39,6 +46,9 @@ var (
 	// ProjectsPrimaryKey and ProjectsColumn2 are the table columns denoting the
 	// primary key for the projects relation (M2M).
 	ProjectsPrimaryKey = []string{"user_id", "project_id"}
+	// CompileRecordsPrimaryKey and CompileRecordsColumn2 are the table columns denoting the
+	// primary key for the compile_records relation (M2M).
+	CompileRecordsPrimaryKey = []string{"user_id", "compile_record_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/sheason2019/spoved/ent/compilerecord"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
 )
@@ -58,6 +59,21 @@ func (uc *UserCreate) AddProjects(p ...*Project) *UserCreate {
 		ids[i] = p[i].ID
 	}
 	return uc.AddProjectIDs(ids...)
+}
+
+// AddCompileRecordIDs adds the "compile_records" edge to the CompileRecord entity by IDs.
+func (uc *UserCreate) AddCompileRecordIDs(ids ...int) *UserCreate {
+	uc.mutation.AddCompileRecordIDs(ids...)
+	return uc
+}
+
+// AddCompileRecords adds the "compile_records" edges to the CompileRecord entity.
+func (uc *UserCreate) AddCompileRecords(c ...*CompileRecord) *UserCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uc.AddCompileRecordIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -165,6 +181,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.CompileRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.CompileRecordsTable,
+			Columns: user.CompileRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: compilerecord.FieldID,
 				},
 			},
 		}

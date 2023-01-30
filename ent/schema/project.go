@@ -26,6 +26,7 @@ func (Project) Fields() []ent.Field {
 // Edges of the User.
 func (Project) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.To("compile_records", CompileRecord.Type),
 		edge.From("creator", User.Type).Ref("projects"),
 	}
 }

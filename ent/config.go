@@ -27,12 +27,14 @@ type config struct {
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Project []ent.Hook
-		User    []ent.Hook
+		CompileRecord []ent.Hook
+		Project       []ent.Hook
+		User          []ent.Hook
 	}
 	inters struct {
-		Project []ent.Interceptor
-		User    []ent.Interceptor
+		CompileRecord []ent.Interceptor
+		Project       []ent.Interceptor
+		User          []ent.Interceptor
 	}
 )
 

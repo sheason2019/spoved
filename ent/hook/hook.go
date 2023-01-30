@@ -9,6 +9,18 @@ import (
 	"github.com/sheason2019/spoved/ent"
 )
 
+// The CompileRecordFunc type is an adapter to allow the use of ordinary
+// function as CompileRecord mutator.
+type CompileRecordFunc func(context.Context, *ent.CompileRecordMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CompileRecordFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CompileRecordMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CompileRecordMutation", m)
+}
+
 // The ProjectFunc type is an adapter to allow the use of ordinary
 // function as Project mutator.
 type ProjectFunc func(context.Context, *ent.ProjectMutation) (ent.Value, error)

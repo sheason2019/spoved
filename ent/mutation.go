@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/sheason2019/spoved/ent/compilerecord"
 	"github.com/sheason2019/spoved/ent/predicate"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
@@ -26,28 +27,840 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeProject = "Project"
-	TypeUser    = "User"
+	TypeCompileRecord = "CompileRecord"
+	TypeProject       = "Project"
+	TypeUser          = "User"
 )
+
+// CompileRecordMutation represents an operation that mutates the CompileRecord nodes in the graph.
+type CompileRecordMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *int
+	version         *string
+	image           *string
+	created_at      *time.Time
+	status_code     *int
+	addstatus_code  *int
+	output          *string
+	branch          *string
+	clearedFields   map[string]struct{}
+	operator        map[int]struct{}
+	removedoperator map[int]struct{}
+	clearedoperator bool
+	project         map[int]struct{}
+	removedproject  map[int]struct{}
+	clearedproject  bool
+	done            bool
+	oldValue        func(context.Context) (*CompileRecord, error)
+	predicates      []predicate.CompileRecord
+}
+
+var _ ent.Mutation = (*CompileRecordMutation)(nil)
+
+// compilerecordOption allows management of the mutation configuration using functional options.
+type compilerecordOption func(*CompileRecordMutation)
+
+// newCompileRecordMutation creates new mutation for the CompileRecord entity.
+func newCompileRecordMutation(c config, op Op, opts ...compilerecordOption) *CompileRecordMutation {
+	m := &CompileRecordMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeCompileRecord,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withCompileRecordID sets the ID field of the mutation.
+func withCompileRecordID(id int) compilerecordOption {
+	return func(m *CompileRecordMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *CompileRecord
+		)
+		m.oldValue = func(ctx context.Context) (*CompileRecord, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().CompileRecord.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withCompileRecord sets the old CompileRecord of the mutation.
+func withCompileRecord(node *CompileRecord) compilerecordOption {
+	return func(m *CompileRecordMutation) {
+		m.oldValue = func(context.Context) (*CompileRecord, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m CompileRecordMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m CompileRecordMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *CompileRecordMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *CompileRecordMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().CompileRecord.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetVersion sets the "version" field.
+func (m *CompileRecordMutation) SetVersion(s string) {
+	m.version = &s
+}
+
+// Version returns the value of the "version" field in the mutation.
+func (m *CompileRecordMutation) Version() (r string, exists bool) {
+	v := m.version
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVersion returns the old "version" field's value of the CompileRecord entity.
+// If the CompileRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompileRecordMutation) OldVersion(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVersion is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVersion requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVersion: %w", err)
+	}
+	return oldValue.Version, nil
+}
+
+// ResetVersion resets all changes to the "version" field.
+func (m *CompileRecordMutation) ResetVersion() {
+	m.version = nil
+}
+
+// SetImage sets the "image" field.
+func (m *CompileRecordMutation) SetImage(s string) {
+	m.image = &s
+}
+
+// Image returns the value of the "image" field in the mutation.
+func (m *CompileRecordMutation) Image() (r string, exists bool) {
+	v := m.image
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldImage returns the old "image" field's value of the CompileRecord entity.
+// If the CompileRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompileRecordMutation) OldImage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldImage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldImage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldImage: %w", err)
+	}
+	return oldValue.Image, nil
+}
+
+// ResetImage resets all changes to the "image" field.
+func (m *CompileRecordMutation) ResetImage() {
+	m.image = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *CompileRecordMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *CompileRecordMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the CompileRecord entity.
+// If the CompileRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompileRecordMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *CompileRecordMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetStatusCode sets the "status_code" field.
+func (m *CompileRecordMutation) SetStatusCode(i int) {
+	m.status_code = &i
+	m.addstatus_code = nil
+}
+
+// StatusCode returns the value of the "status_code" field in the mutation.
+func (m *CompileRecordMutation) StatusCode() (r int, exists bool) {
+	v := m.status_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatusCode returns the old "status_code" field's value of the CompileRecord entity.
+// If the CompileRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompileRecordMutation) OldStatusCode(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatusCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatusCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatusCode: %w", err)
+	}
+	return oldValue.StatusCode, nil
+}
+
+// AddStatusCode adds i to the "status_code" field.
+func (m *CompileRecordMutation) AddStatusCode(i int) {
+	if m.addstatus_code != nil {
+		*m.addstatus_code += i
+	} else {
+		m.addstatus_code = &i
+	}
+}
+
+// AddedStatusCode returns the value that was added to the "status_code" field in this mutation.
+func (m *CompileRecordMutation) AddedStatusCode() (r int, exists bool) {
+	v := m.addstatus_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetStatusCode resets all changes to the "status_code" field.
+func (m *CompileRecordMutation) ResetStatusCode() {
+	m.status_code = nil
+	m.addstatus_code = nil
+}
+
+// SetOutput sets the "output" field.
+func (m *CompileRecordMutation) SetOutput(s string) {
+	m.output = &s
+}
+
+// Output returns the value of the "output" field in the mutation.
+func (m *CompileRecordMutation) Output() (r string, exists bool) {
+	v := m.output
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOutput returns the old "output" field's value of the CompileRecord entity.
+// If the CompileRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompileRecordMutation) OldOutput(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOutput is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOutput requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOutput: %w", err)
+	}
+	return oldValue.Output, nil
+}
+
+// ResetOutput resets all changes to the "output" field.
+func (m *CompileRecordMutation) ResetOutput() {
+	m.output = nil
+}
+
+// SetBranch sets the "branch" field.
+func (m *CompileRecordMutation) SetBranch(s string) {
+	m.branch = &s
+}
+
+// Branch returns the value of the "branch" field in the mutation.
+func (m *CompileRecordMutation) Branch() (r string, exists bool) {
+	v := m.branch
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBranch returns the old "branch" field's value of the CompileRecord entity.
+// If the CompileRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompileRecordMutation) OldBranch(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBranch is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBranch requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBranch: %w", err)
+	}
+	return oldValue.Branch, nil
+}
+
+// ResetBranch resets all changes to the "branch" field.
+func (m *CompileRecordMutation) ResetBranch() {
+	m.branch = nil
+}
+
+// AddOperatorIDs adds the "operator" edge to the User entity by ids.
+func (m *CompileRecordMutation) AddOperatorIDs(ids ...int) {
+	if m.operator == nil {
+		m.operator = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.operator[ids[i]] = struct{}{}
+	}
+}
+
+// ClearOperator clears the "operator" edge to the User entity.
+func (m *CompileRecordMutation) ClearOperator() {
+	m.clearedoperator = true
+}
+
+// OperatorCleared reports if the "operator" edge to the User entity was cleared.
+func (m *CompileRecordMutation) OperatorCleared() bool {
+	return m.clearedoperator
+}
+
+// RemoveOperatorIDs removes the "operator" edge to the User entity by IDs.
+func (m *CompileRecordMutation) RemoveOperatorIDs(ids ...int) {
+	if m.removedoperator == nil {
+		m.removedoperator = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.operator, ids[i])
+		m.removedoperator[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedOperator returns the removed IDs of the "operator" edge to the User entity.
+func (m *CompileRecordMutation) RemovedOperatorIDs() (ids []int) {
+	for id := range m.removedoperator {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// OperatorIDs returns the "operator" edge IDs in the mutation.
+func (m *CompileRecordMutation) OperatorIDs() (ids []int) {
+	for id := range m.operator {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetOperator resets all changes to the "operator" edge.
+func (m *CompileRecordMutation) ResetOperator() {
+	m.operator = nil
+	m.clearedoperator = false
+	m.removedoperator = nil
+}
+
+// AddProjectIDs adds the "project" edge to the Project entity by ids.
+func (m *CompileRecordMutation) AddProjectIDs(ids ...int) {
+	if m.project == nil {
+		m.project = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.project[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (m *CompileRecordMutation) ClearProject() {
+	m.clearedproject = true
+}
+
+// ProjectCleared reports if the "project" edge to the Project entity was cleared.
+func (m *CompileRecordMutation) ProjectCleared() bool {
+	return m.clearedproject
+}
+
+// RemoveProjectIDs removes the "project" edge to the Project entity by IDs.
+func (m *CompileRecordMutation) RemoveProjectIDs(ids ...int) {
+	if m.removedproject == nil {
+		m.removedproject = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.project, ids[i])
+		m.removedproject[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProject returns the removed IDs of the "project" edge to the Project entity.
+func (m *CompileRecordMutation) RemovedProjectIDs() (ids []int) {
+	for id := range m.removedproject {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProjectIDs returns the "project" edge IDs in the mutation.
+func (m *CompileRecordMutation) ProjectIDs() (ids []int) {
+	for id := range m.project {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProject resets all changes to the "project" edge.
+func (m *CompileRecordMutation) ResetProject() {
+	m.project = nil
+	m.clearedproject = false
+	m.removedproject = nil
+}
+
+// Where appends a list predicates to the CompileRecordMutation builder.
+func (m *CompileRecordMutation) Where(ps ...predicate.CompileRecord) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the CompileRecordMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *CompileRecordMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.CompileRecord, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *CompileRecordMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *CompileRecordMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (CompileRecord).
+func (m *CompileRecordMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *CompileRecordMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.version != nil {
+		fields = append(fields, compilerecord.FieldVersion)
+	}
+	if m.image != nil {
+		fields = append(fields, compilerecord.FieldImage)
+	}
+	if m.created_at != nil {
+		fields = append(fields, compilerecord.FieldCreatedAt)
+	}
+	if m.status_code != nil {
+		fields = append(fields, compilerecord.FieldStatusCode)
+	}
+	if m.output != nil {
+		fields = append(fields, compilerecord.FieldOutput)
+	}
+	if m.branch != nil {
+		fields = append(fields, compilerecord.FieldBranch)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *CompileRecordMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case compilerecord.FieldVersion:
+		return m.Version()
+	case compilerecord.FieldImage:
+		return m.Image()
+	case compilerecord.FieldCreatedAt:
+		return m.CreatedAt()
+	case compilerecord.FieldStatusCode:
+		return m.StatusCode()
+	case compilerecord.FieldOutput:
+		return m.Output()
+	case compilerecord.FieldBranch:
+		return m.Branch()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *CompileRecordMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case compilerecord.FieldVersion:
+		return m.OldVersion(ctx)
+	case compilerecord.FieldImage:
+		return m.OldImage(ctx)
+	case compilerecord.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case compilerecord.FieldStatusCode:
+		return m.OldStatusCode(ctx)
+	case compilerecord.FieldOutput:
+		return m.OldOutput(ctx)
+	case compilerecord.FieldBranch:
+		return m.OldBranch(ctx)
+	}
+	return nil, fmt.Errorf("unknown CompileRecord field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CompileRecordMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case compilerecord.FieldVersion:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVersion(v)
+		return nil
+	case compilerecord.FieldImage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetImage(v)
+		return nil
+	case compilerecord.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case compilerecord.FieldStatusCode:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatusCode(v)
+		return nil
+	case compilerecord.FieldOutput:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOutput(v)
+		return nil
+	case compilerecord.FieldBranch:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBranch(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CompileRecord field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *CompileRecordMutation) AddedFields() []string {
+	var fields []string
+	if m.addstatus_code != nil {
+		fields = append(fields, compilerecord.FieldStatusCode)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *CompileRecordMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case compilerecord.FieldStatusCode:
+		return m.AddedStatusCode()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *CompileRecordMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case compilerecord.FieldStatusCode:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStatusCode(v)
+		return nil
+	}
+	return fmt.Errorf("unknown CompileRecord numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *CompileRecordMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *CompileRecordMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *CompileRecordMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown CompileRecord nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *CompileRecordMutation) ResetField(name string) error {
+	switch name {
+	case compilerecord.FieldVersion:
+		m.ResetVersion()
+		return nil
+	case compilerecord.FieldImage:
+		m.ResetImage()
+		return nil
+	case compilerecord.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case compilerecord.FieldStatusCode:
+		m.ResetStatusCode()
+		return nil
+	case compilerecord.FieldOutput:
+		m.ResetOutput()
+		return nil
+	case compilerecord.FieldBranch:
+		m.ResetBranch()
+		return nil
+	}
+	return fmt.Errorf("unknown CompileRecord field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *CompileRecordMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.operator != nil {
+		edges = append(edges, compilerecord.EdgeOperator)
+	}
+	if m.project != nil {
+		edges = append(edges, compilerecord.EdgeProject)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *CompileRecordMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case compilerecord.EdgeOperator:
+		ids := make([]ent.Value, 0, len(m.operator))
+		for id := range m.operator {
+			ids = append(ids, id)
+		}
+		return ids
+	case compilerecord.EdgeProject:
+		ids := make([]ent.Value, 0, len(m.project))
+		for id := range m.project {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *CompileRecordMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedoperator != nil {
+		edges = append(edges, compilerecord.EdgeOperator)
+	}
+	if m.removedproject != nil {
+		edges = append(edges, compilerecord.EdgeProject)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *CompileRecordMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case compilerecord.EdgeOperator:
+		ids := make([]ent.Value, 0, len(m.removedoperator))
+		for id := range m.removedoperator {
+			ids = append(ids, id)
+		}
+		return ids
+	case compilerecord.EdgeProject:
+		ids := make([]ent.Value, 0, len(m.removedproject))
+		for id := range m.removedproject {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *CompileRecordMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedoperator {
+		edges = append(edges, compilerecord.EdgeOperator)
+	}
+	if m.clearedproject {
+		edges = append(edges, compilerecord.EdgeProject)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *CompileRecordMutation) EdgeCleared(name string) bool {
+	switch name {
+	case compilerecord.EdgeOperator:
+		return m.clearedoperator
+	case compilerecord.EdgeProject:
+		return m.clearedproject
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *CompileRecordMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown CompileRecord unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *CompileRecordMutation) ResetEdge(name string) error {
+	switch name {
+	case compilerecord.EdgeOperator:
+		m.ResetOperator()
+		return nil
+	case compilerecord.EdgeProject:
+		m.ResetProject()
+		return nil
+	}
+	return fmt.Errorf("unknown CompileRecord edge %s", name)
+}
 
 // ProjectMutation represents an operation that mutates the Project nodes in the graph.
 type ProjectMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *int
-	project_name   *string
-	describe       *string
-	git_url        *string
-	dir_path       *string
-	created_at     *time.Time
-	clearedFields  map[string]struct{}
-	creator        map[int]struct{}
-	removedcreator map[int]struct{}
-	clearedcreator bool
-	done           bool
-	oldValue       func(context.Context) (*Project, error)
-	predicates     []predicate.Project
+	op                     Op
+	typ                    string
+	id                     *int
+	project_name           *string
+	describe               *string
+	git_url                *string
+	dir_path               *string
+	created_at             *time.Time
+	clearedFields          map[string]struct{}
+	compile_records        map[int]struct{}
+	removedcompile_records map[int]struct{}
+	clearedcompile_records bool
+	creator                map[int]struct{}
+	removedcreator         map[int]struct{}
+	clearedcreator         bool
+	done                   bool
+	oldValue               func(context.Context) (*Project, error)
+	predicates             []predicate.Project
 }
 
 var _ ent.Mutation = (*ProjectMutation)(nil)
@@ -328,6 +1141,60 @@ func (m *ProjectMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
+// AddCompileRecordIDs adds the "compile_records" edge to the CompileRecord entity by ids.
+func (m *ProjectMutation) AddCompileRecordIDs(ids ...int) {
+	if m.compile_records == nil {
+		m.compile_records = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.compile_records[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCompileRecords clears the "compile_records" edge to the CompileRecord entity.
+func (m *ProjectMutation) ClearCompileRecords() {
+	m.clearedcompile_records = true
+}
+
+// CompileRecordsCleared reports if the "compile_records" edge to the CompileRecord entity was cleared.
+func (m *ProjectMutation) CompileRecordsCleared() bool {
+	return m.clearedcompile_records
+}
+
+// RemoveCompileRecordIDs removes the "compile_records" edge to the CompileRecord entity by IDs.
+func (m *ProjectMutation) RemoveCompileRecordIDs(ids ...int) {
+	if m.removedcompile_records == nil {
+		m.removedcompile_records = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.compile_records, ids[i])
+		m.removedcompile_records[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCompileRecords returns the removed IDs of the "compile_records" edge to the CompileRecord entity.
+func (m *ProjectMutation) RemovedCompileRecordsIDs() (ids []int) {
+	for id := range m.removedcompile_records {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CompileRecordsIDs returns the "compile_records" edge IDs in the mutation.
+func (m *ProjectMutation) CompileRecordsIDs() (ids []int) {
+	for id := range m.compile_records {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCompileRecords resets all changes to the "compile_records" edge.
+func (m *ProjectMutation) ResetCompileRecords() {
+	m.compile_records = nil
+	m.clearedcompile_records = false
+	m.removedcompile_records = nil
+}
+
 // AddCreatorIDs adds the "creator" edge to the User entity by ids.
 func (m *ProjectMutation) AddCreatorIDs(ids ...int) {
 	if m.creator == nil {
@@ -583,7 +1450,10 @@ func (m *ProjectMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProjectMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.compile_records != nil {
+		edges = append(edges, project.EdgeCompileRecords)
+	}
 	if m.creator != nil {
 		edges = append(edges, project.EdgeCreator)
 	}
@@ -594,6 +1464,12 @@ func (m *ProjectMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case project.EdgeCompileRecords:
+		ids := make([]ent.Value, 0, len(m.compile_records))
+		for id := range m.compile_records {
+			ids = append(ids, id)
+		}
+		return ids
 	case project.EdgeCreator:
 		ids := make([]ent.Value, 0, len(m.creator))
 		for id := range m.creator {
@@ -606,7 +1482,10 @@ func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProjectMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removedcompile_records != nil {
+		edges = append(edges, project.EdgeCompileRecords)
+	}
 	if m.removedcreator != nil {
 		edges = append(edges, project.EdgeCreator)
 	}
@@ -617,6 +1496,12 @@ func (m *ProjectMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case project.EdgeCompileRecords:
+		ids := make([]ent.Value, 0, len(m.removedcompile_records))
+		for id := range m.removedcompile_records {
+			ids = append(ids, id)
+		}
+		return ids
 	case project.EdgeCreator:
 		ids := make([]ent.Value, 0, len(m.removedcreator))
 		for id := range m.removedcreator {
@@ -629,7 +1514,10 @@ func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProjectMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.clearedcompile_records {
+		edges = append(edges, project.EdgeCompileRecords)
+	}
 	if m.clearedcreator {
 		edges = append(edges, project.EdgeCreator)
 	}
@@ -640,6 +1528,8 @@ func (m *ProjectMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ProjectMutation) EdgeCleared(name string) bool {
 	switch name {
+	case project.EdgeCompileRecords:
+		return m.clearedcompile_records
 	case project.EdgeCreator:
 		return m.clearedcreator
 	}
@@ -658,6 +1548,9 @@ func (m *ProjectMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ProjectMutation) ResetEdge(name string) error {
 	switch name {
+	case project.EdgeCompileRecords:
+		m.ResetCompileRecords()
+		return nil
 	case project.EdgeCreator:
 		m.ResetCreator()
 		return nil
@@ -668,20 +1561,23 @@ func (m *ProjectMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *int
-	username        *string
-	password_hash   *string
-	password_salt   *string
-	created_at      *time.Time
-	clearedFields   map[string]struct{}
-	projects        map[int]struct{}
-	removedprojects map[int]struct{}
-	clearedprojects bool
-	done            bool
-	oldValue        func(context.Context) (*User, error)
-	predicates      []predicate.User
+	op                     Op
+	typ                    string
+	id                     *int
+	username               *string
+	password_hash          *string
+	password_salt          *string
+	created_at             *time.Time
+	clearedFields          map[string]struct{}
+	projects               map[int]struct{}
+	removedprojects        map[int]struct{}
+	clearedprojects        bool
+	compile_records        map[int]struct{}
+	removedcompile_records map[int]struct{}
+	clearedcompile_records bool
+	done                   bool
+	oldValue               func(context.Context) (*User, error)
+	predicates             []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -980,6 +1876,60 @@ func (m *UserMutation) ResetProjects() {
 	m.removedprojects = nil
 }
 
+// AddCompileRecordIDs adds the "compile_records" edge to the CompileRecord entity by ids.
+func (m *UserMutation) AddCompileRecordIDs(ids ...int) {
+	if m.compile_records == nil {
+		m.compile_records = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.compile_records[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCompileRecords clears the "compile_records" edge to the CompileRecord entity.
+func (m *UserMutation) ClearCompileRecords() {
+	m.clearedcompile_records = true
+}
+
+// CompileRecordsCleared reports if the "compile_records" edge to the CompileRecord entity was cleared.
+func (m *UserMutation) CompileRecordsCleared() bool {
+	return m.clearedcompile_records
+}
+
+// RemoveCompileRecordIDs removes the "compile_records" edge to the CompileRecord entity by IDs.
+func (m *UserMutation) RemoveCompileRecordIDs(ids ...int) {
+	if m.removedcompile_records == nil {
+		m.removedcompile_records = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.compile_records, ids[i])
+		m.removedcompile_records[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCompileRecords returns the removed IDs of the "compile_records" edge to the CompileRecord entity.
+func (m *UserMutation) RemovedCompileRecordsIDs() (ids []int) {
+	for id := range m.removedcompile_records {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CompileRecordsIDs returns the "compile_records" edge IDs in the mutation.
+func (m *UserMutation) CompileRecordsIDs() (ids []int) {
+	for id := range m.compile_records {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCompileRecords resets all changes to the "compile_records" edge.
+func (m *UserMutation) ResetCompileRecords() {
+	m.compile_records = nil
+	m.clearedcompile_records = false
+	m.removedcompile_records = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -1164,9 +2114,12 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.projects != nil {
 		edges = append(edges, user.EdgeProjects)
+	}
+	if m.compile_records != nil {
+		edges = append(edges, user.EdgeCompileRecords)
 	}
 	return edges
 }
@@ -1181,15 +2134,24 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeCompileRecords:
+		ids := make([]ent.Value, 0, len(m.compile_records))
+		for id := range m.compile_records {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.removedprojects != nil {
 		edges = append(edges, user.EdgeProjects)
+	}
+	if m.removedcompile_records != nil {
+		edges = append(edges, user.EdgeCompileRecords)
 	}
 	return edges
 }
@@ -1204,15 +2166,24 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeCompileRecords:
+		ids := make([]ent.Value, 0, len(m.removedcompile_records))
+		for id := range m.removedcompile_records {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedprojects {
 		edges = append(edges, user.EdgeProjects)
+	}
+	if m.clearedcompile_records {
+		edges = append(edges, user.EdgeCompileRecords)
 	}
 	return edges
 }
@@ -1223,6 +2194,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
 	case user.EdgeProjects:
 		return m.clearedprojects
+	case user.EdgeCompileRecords:
+		return m.clearedcompile_records
 	}
 	return false
 }
@@ -1241,6 +2214,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
 	case user.EdgeProjects:
 		m.ResetProjects()
+		return nil
+	case user.EdgeCompileRecords:
+		m.ResetCompileRecords()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)
