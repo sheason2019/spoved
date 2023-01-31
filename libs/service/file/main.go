@@ -2,17 +2,21 @@
 package file_service
 
 import (
+	"bytes"
+	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/sheason2019/spoved/exceptions/exception"
 )
 
-const path_root = "data/"
+const path_root = "/var/spoved/data/"
 
 func Read(path string) (string, error) {
 	c, e := os.ReadFile(path_root + path)
@@ -58,12 +62,12 @@ func GitClone(url, dir, branch string) (string, *exception.Exception) {
 
 	outputs := []string{}
 
-	output, err := exec.Command("git", "clone", "--depth", "1", url, dir).Output()
-	if err != nil {
-		fmt.Println("throw")
-		return string(output), exception.New(err)
+	os.RemoveAll(dir)
+
+	e := gitClone(context.Background(), url, dir)
+	if e != nil {
+		return "", e.Wrap()
 	}
-	outputs = append(outputs, string(output))
 
 	if branch != "master" {
 		output, err := exec.Command(
@@ -78,6 +82,45 @@ func GitClone(url, dir, branch string) (string, *exception.Exception) {
 
 	return strings.Join(outputs, "\n"), nil
 }
+
+func gitClone(ctx context.Context, url, dir string) *exception.Exception {
+	toCtx, cancel := context.WithTimeout(ctx, time.Second*15)
+	defer cancel()
+
+	cmdOut := struct {
+		Output *bytes.Buffer
+		err    error
+	}{
+		Output: bytes.NewBuffer([]byte{}),
+	}
+
+	go func(ctx context.Context) {
+		os.RemoveAll(dir)
+		cmd := exec.Command("git", "clone", "--progress", "--depth", "1", url, dir)
+		cmd.Stderr = cmdOut.Output
+		cmd.Stdout = cmdOut.Output
+
+		err := cmd.Run()
+		if err != nil {
+			cmdOut.err = err
+		}
+		cancel()
+	}(toCtx)
+
+	select {
+	case <-toCtx.Done():
+		break
+	case <-time.After(time.Second * 15):
+		return exception.New(errors.New("拉取仓库超时"))
+	}
+
+	if cmdOut.err != nil {
+		return exception.New(cmdOut.err)
+	}
+	return nil
+}
+
+// func checkoutBranch(ctx context.Context, dir, branch string) {}
 
 func GetAbsPath(p string) (string, error) {
 	if path.IsAbs(p) {

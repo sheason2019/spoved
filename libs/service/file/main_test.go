@@ -8,7 +8,7 @@ import (
 )
 
 func TestGitClone(t *testing.T) {
-	output, err := file_service.GitClone("https://github.com/sheason2019/node-template", "/repos/node-template", "master")
+	output, err := file_service.GitClone("https://github.com/sheason2019/node-template", "/repos/node-template/0.0.1", "master")
 	if err != nil {
 		err.Panic()
 	}
