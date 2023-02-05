@@ -15,4 +15,5 @@ func BindController(r *gin.Engine) {
 	bindGetUsernameRepeat(r)
 	bindLogin(r)
 	bindGetCurrentUser(r)
+	bindGetSshPubKey(r)
 }

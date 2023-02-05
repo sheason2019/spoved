@@ -1,8 +1,6 @@
 package account_controller
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 	"github.com/sheason2019/spoved/libs/idl-lib/account"
 	"github.com/sheason2019/spoved/libs/middleware"
@@ -12,7 +10,7 @@ import (
 func (AccountController) GetUsernameRepeat(ctx *gin.Context, payload account.GetUsernameRepeatPayload) account.GetUsernameRepeatResponse {
 	usr, e := account_service.FindUserByUsername(payload.Name)
 	if e != nil {
-		panic(fmt.Sprintf("%+v", e))
+		panic(e)
 	}
 	return account.GetUsernameRepeatResponse{
 		Repeat: usr != nil,

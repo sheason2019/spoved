@@ -19,3 +19,9 @@ func (AccountController) GetSshPubKey(ctx *gin.Context) account.GetSshPubKeyResp
 		PubKey: pair.PublicKey,
 	}
 }
+
+func bindGetSshPubKey(r *gin.Engine) {
+	r.GET(account.AccountApiDefinition.GET_SSH_PUB_KEY_PATH, func(ctx *gin.Context) {
+		ctx.JSON(200, ac.GetSshPubKey(ctx))
+	})
+}
