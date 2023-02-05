@@ -1,6 +1,8 @@
 package project_controller
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sheason2019/spoved/libs/idl-lib/common"
 	"github.com/sheason2019/spoved/libs/idl-lib/project"
@@ -15,11 +17,11 @@ func (ProjectController) GetProjects(ctx *gin.Context, pagination common.Paginat
 
 	projs, e := project_service.FindProjectsByUser(currentUser, &pagination)
 	if e != nil {
-		e.Panic()
+		panic(fmt.Sprintf("%+v", e))
 	}
 	count, e := project_service.CountProjectsByUser(currentUser)
 	if e != nil {
-		e.Panic()
+		panic(fmt.Sprintf("%+v", e))
 	}
 
 	pagination.ItemCounts = count

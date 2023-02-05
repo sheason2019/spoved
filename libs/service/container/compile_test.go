@@ -9,6 +9,7 @@ import (
 func TestCompile(t *testing.T) {
 	e := container_service.Compile("node:16-alpine", "Patch", "master", 1)
 	if e != nil {
-		e.Panic()
+		t.Errorf("%+v", e)
+		return
 	}
 }

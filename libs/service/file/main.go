@@ -4,7 +4,6 @@ package file_service
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -13,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sheason2019/spoved/exceptions/exception"
+	"github.com/pkg/errors"
 	"github.com/sheason2019/spoved/libs/env"
 	"github.com/sheason2019/spoved/libs/utils"
 )
@@ -67,7 +66,7 @@ func Mkdir(path string) {
 	os.MkdirAll(path, os.ModePerm)
 }
 
-func GitClone(url, dir, branch string) (string, *exception.Exception) {
+func GitClone(url, dir, branch string) (string, error) {
 	dir = path_root + dir
 
 	fmt.Println(dir)
@@ -76,9 +75,9 @@ func GitClone(url, dir, branch string) (string, *exception.Exception) {
 
 	os.RemoveAll(dir)
 
-	e := gitClone(context.Background(), url, dir)
-	if e != nil {
-		return "", e.Wrap()
+	err := gitClone(context.Background(), url, dir)
+	if err != nil {
+		return "", err
 	}
 
 	if branch != "master" {
@@ -95,7 +94,7 @@ func GitClone(url, dir, branch string) (string, *exception.Exception) {
 	return strings.Join(outputs, "\n"), nil
 }
 
-func gitClone(ctx context.Context, url, dir string) *exception.Exception {
+func gitClone(ctx context.Context, url, dir string) error {
 	toCtx, cancel := context.WithTimeout(ctx, time.Second*15)
 	defer cancel()
 
@@ -123,11 +122,11 @@ func gitClone(ctx context.Context, url, dir string) *exception.Exception {
 	case <-toCtx.Done():
 		break
 	case <-time.After(time.Second * 15):
-		return exception.New(errors.New("拉取仓库超时"))
+		return errors.WithStack(errors.New("拉取仓库超时"))
 	}
 
 	if cmdOut.err != nil {
-		return exception.New(cmdOut.err)
+		return errors.WithStack(cmdOut.err)
 	}
 	return nil
 }

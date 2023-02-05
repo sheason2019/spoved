@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/sheason2019/spoved/ent"
-	"github.com/sheason2019/spoved/exceptions/exception"
 	"github.com/sheason2019/spoved/libs/dbc"
 	project_idl "github.com/sheason2019/spoved/libs/idl-lib/project"
 )
 
-func CreateProject(proj *project_idl.Project, creator *ent.User) (*ent.Project, *exception.Exception) {
+func CreateProject(proj *project_idl.Project, creator *ent.User) (*ent.Project, error) {
 	// 校验逻辑
-	e := validate(proj, creator)
-	if e != nil {
-		return nil, e.Wrap()
+	err := validate(proj, creator)
+	if err != nil {
+		return nil, err
 	}
 
 	client := dbc.GetClient()
@@ -31,7 +31,7 @@ func CreateProject(proj *project_idl.Project, creator *ent.User) (*ent.Project, 
 		Save(context.Background())
 
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, errors.WithStack(err)
 	}
 
 	return entProj, nil

@@ -1,6 +1,7 @@
 package crypto_service_test
 
 import (
+	"fmt"
 	"testing"
 
 	crypto_service "github.com/sheason2019/spoved/libs/service/account/crypto"
@@ -21,5 +22,6 @@ func TestInitRsa(t *testing.T) {
 }
 
 func TestMustGetRsaPair(t *testing.T) {
-	crypto_service.MustGetRsaPair()
+	k := crypto_service.MustGetRsaPair()
+	fmt.Printf("%+v", k)
 }

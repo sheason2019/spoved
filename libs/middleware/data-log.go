@@ -3,11 +3,10 @@ package middleware
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sheason2019/spoved/exceptions/exception"
+	"github.com/pkg/errors"
 )
 
 // 展示请求参数
@@ -43,7 +42,7 @@ func DataLog(c *gin.Context) {
 func JsonStr(v any) string {
 	j, e := json.Marshal(v)
 	if e != nil {
-		exception.New(e).Panic()
+		panic(e)
 	}
 
 	var buf bytes.Buffer
@@ -59,17 +58,17 @@ func ShowBodyString(body []byte) string {
 	m := make(map[string]any)
 	err := json.Unmarshal(body, &m)
 	if err != nil {
-		exception.New(err).Panic()
+		panic(err)
 	}
 
 	return JsonStr(m)
 }
 
 // 获取请求的参数
-func GetData(c *gin.Context) (string, *exception.Exception) {
+func GetData(c *gin.Context) (string, error) {
 	j, exist := c.Get("data")
 	if !exist {
-		return "", exception.New(errors.New("Context中不存在Data"))
+		return "", errors.WithStack(errors.New("Context中不存在Data"))
 	}
 
 	return j.(string), nil

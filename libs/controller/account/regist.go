@@ -1,6 +1,8 @@
 package account_controller
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sheason2019/spoved/libs/idl-lib/account"
 	"github.com/sheason2019/spoved/libs/middleware"
@@ -11,7 +13,7 @@ func (AccountController) Regist(c *gin.Context, account account.AccountInfo) {
 	// 注册逻辑 接受用户信息，校验并生成用户Record
 	_, e := regist_service.Regist(&account)
 	if e != nil {
-		e.Panic()
+		panic(fmt.Sprintf("%+v", e))
 	}
 }
 

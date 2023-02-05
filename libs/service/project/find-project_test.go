@@ -13,9 +13,10 @@ func TestFindProjectTest(t *testing.T) {
 	username := "sheason"
 	projName := "node-template"
 
-	proj, e := project_service.FindProject(username, projName)
-	if e != nil {
-		e.Panic()
+	proj, err := project_service.FindProject(username, projName)
+	if err != nil {
+		t.Errorf("%+v", err)
+		return
 	}
 
 	fmt.Println(proj)

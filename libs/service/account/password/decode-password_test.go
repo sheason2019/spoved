@@ -12,7 +12,11 @@ import (
 func TestDecodePassword(t *testing.T) {
 	pwd := "test password"
 	salt := "test salt"
-	cipherPwd := crypto_service.EncodeString(pwd + salt)
+	cipherPwd, err := crypto_service.EncodeString(pwd + salt)
+	if err != nil {
+		t.Errorf("%+v", err)
+		return
+	}
 	fmt.Println("cipherPwd:", cipherPwd)
 	info := account.AccountInfo{
 		Username: "",
@@ -21,7 +25,7 @@ func TestDecodePassword(t *testing.T) {
 	}
 	e := password.DecodePassword(&info)
 	if e != nil {
-		t.Error(e.Print())
+		t.Errorf("%+v", e)
 	}
 	if info.Password != pwd {
 		t.Errorf("解密后的密码与原密码不相同")

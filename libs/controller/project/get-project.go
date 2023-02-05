@@ -2,9 +2,9 @@ package project_controller
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sheason2019/spoved/exceptions/exception"
 	"github.com/sheason2019/spoved/libs/idl-lib/project"
 	"github.com/sheason2019/spoved/libs/middleware"
 	project_service "github.com/sheason2019/spoved/libs/service/project"
@@ -14,10 +14,10 @@ import (
 func (ProjectController) GetProject(ctx *gin.Context, payload project.GetProjectPayload) project.Project {
 	proj, e := project_service.FindProject(payload.Username, payload.ProjectName)
 	if e != nil {
-		e.Panic()
+		panic(fmt.Sprintf("%+v", e))
 	}
 	if proj == nil {
-		exception.New(errors.New("指定的Project不存在")).Panic()
+		panic(errors.New("指定的Project不存在"))
 	}
 
 	return transfer.ProjectToIdl(proj)

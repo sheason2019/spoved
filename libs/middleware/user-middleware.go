@@ -1,11 +1,9 @@
 package middleware
 
 import (
-	"errors"
-
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/sheason2019/spoved/ent"
-	"github.com/sheason2019/spoved/exceptions/exception"
 	account_service "github.com/sheason2019/spoved/libs/service/account/account"
 	login_service "github.com/sheason2019/spoved/libs/service/account/login"
 )
@@ -30,7 +28,7 @@ func UserMiddleware(ctx *gin.Context) {
 }
 
 // 从Token中获取当前请求的用户信息
-func GetCurrentUser(ctx *gin.Context) (*ent.User, *exception.Exception) {
+func GetCurrentUser(ctx *gin.Context) (*ent.User, error) {
 	value, exist := ctx.Get("user")
 	if !exist {
 		return nil, nil
@@ -38,16 +36,16 @@ func GetCurrentUser(ctx *gin.Context) (*ent.User, *exception.Exception) {
 
 	usr, ok := value.(*ent.User)
 	if !ok {
-		return nil, exception.New(errors.New("获取用户信息失败"))
+		return nil, errors.WithStack(errors.New("获取用户信息失败"))
 	}
 
 	// 在数据库中索引用户
 	usr, e := account_service.FindUserByUsername(usr.Username)
 	if e != nil {
-		return nil, e.Wrap()
+		return nil, e
 	}
 	if usr == nil {
-		return nil, exception.New(errors.New("指定的用户信息不存在"))
+		return nil, errors.WithStack(errors.New("指定的用户信息不存在"))
 	}
 
 	return usr, nil
@@ -57,10 +55,10 @@ func GetCurrentUser(ctx *gin.Context) (*ent.User, *exception.Exception) {
 func MustGetCurrentUser(ctx *gin.Context) *ent.User {
 	usr, e := GetCurrentUser(ctx)
 	if e != nil {
-		e.Panic()
+		panic(e)
 	}
 	if usr == nil {
-		exception.New(errors.New("获取当前请求的身份信息失败")).Panic()
+		panic(errors.New("获取当前请求的身份信息失败"))
 	}
 	return usr
 }

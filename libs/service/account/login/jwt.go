@@ -4,23 +4,31 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/pkg/errors"
 	"github.com/sheason2019/spoved/ent"
-	"github.com/sheason2019/spoved/exceptions/exception"
 	file_service "github.com/sheason2019/spoved/libs/service/file"
 	"github.com/sheason2019/spoved/libs/utils"
 )
 
-var jwt_secret_file = "jwt_secret"
+var jwt_secret_file = "/jwt_secret"
 
-var jwtSecret = GenerateJwtSecret()
+var jwtSecret string
 
 type JwtClaims struct {
 	ent.User
 	jwt.RegisteredClaims
 }
 
+func init() {
+	secret, err := GenerateJwtSecret()
+	jwtSecret = secret
+	if err != nil {
+		panic(err)
+	}
+}
+
 // 生成
-func GenerateJwt(user *ent.User) (string, *exception.Exception) {
+func GenerateJwt(user *ent.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, JwtClaims{
 		User: *user,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -31,13 +39,13 @@ func GenerateJwt(user *ent.User) (string, *exception.Exception) {
 
 	tokenString, err := token.SignedString([]byte(jwtSecret))
 	if err != nil {
-		return "", exception.New(err)
+		return "", errors.WithStack(err)
 	}
 	return tokenString, nil
 }
 
 // 解析
-func ParseJwt(tokenString string) (*JwtClaims, *exception.Exception) {
+func ParseJwt(tokenString string) (*JwtClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &JwtClaims{}, func(t *jwt.Token) (interface{}, error) {
 		return []byte(jwtSecret), nil
 	})
@@ -47,15 +55,15 @@ func ParseJwt(tokenString string) (*JwtClaims, *exception.Exception) {
 			return claims, nil
 		}
 	}
-	return nil, exception.New(err)
+	return nil, errors.WithStack(err)
 }
 
 // 生成Jwt的加密秘钥
-func GenerateJwtSecret() string {
+func GenerateJwtSecret() (string, error) {
 	// 首先尝试从文件系统中获取
 	jwtSecret, err := file_service.Read(jwt_secret_file)
 	if err == nil && len(jwtSecret) > 0 {
-		return jwtSecret
+		return jwtSecret, nil
 	}
 
 	// 否则以64位随机字符串作为jwt的加密秘钥
@@ -63,8 +71,8 @@ func GenerateJwtSecret() string {
 	// 并存入文件系统
 	err = file_service.Write(jwtSecret, jwt_secret_file)
 	if err != nil {
-		exception.New(err).Panic()
+		return "", errors.WithStack(err)
 	}
 
-	return jwtSecret
+	return jwtSecret, nil
 }

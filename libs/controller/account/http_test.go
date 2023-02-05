@@ -33,10 +33,14 @@ func TestRegist(t *testing.T) {
 	testUsername := "testUser1"
 	testPassword := "testPassword"
 
-	cipherPasswordBuf := crypto_service.RsaEncrypt(
+	cipherPasswordBuf, err := crypto_service.RsaEncrypt(
 		[]byte(testPassword+cryptoInfo.Salt),
 		[]byte(cryptoInfo.PubKey),
 	)
+	if err != nil {
+		t.Errorf("%+v", err)
+		return
+	}
 
 	cipherPassword := hex.EncodeToString(cipherPasswordBuf)
 

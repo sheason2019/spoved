@@ -18,9 +18,10 @@ func TestFindProjectsByUser(t *testing.T) {
 		PageSize: 50,
 	}
 
-	projs, e := project_service.FindProjectsByUser(&user, &pg)
-	if e != nil {
-		e.Panic()
+	projs, err := project_service.FindProjectsByUser(&user, &pg)
+	if err != nil {
+		t.Errorf("%+v", err)
+		return
 	}
 
 	fmt.Println(projs)

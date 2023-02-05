@@ -9,7 +9,8 @@ import (
 func TestCreateUser(t *testing.T) {
 	usr, e := CreateUser("testUser1", "test_password", "test_salt")
 	if e != nil {
-		e.Panic()
+		t.Errorf("%+v", e)
+		return
 	}
 
 	fmt.Println(usr)

@@ -17,14 +17,14 @@ func TestJwt(t *testing.T) {
 
 	token, e := login_service.GenerateJwt(&usr)
 	if e != nil {
-		e.Panic()
+		t.Errorf("%+v", e)
 	}
 
 	fmt.Println("token", token)
 
 	claims, e := login_service.ParseJwt(token)
 	if e != nil {
-		e.Panic()
+		t.Errorf("%+v", e)
 	}
 
 	fmt.Println(claims.User)

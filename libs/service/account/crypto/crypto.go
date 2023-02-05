@@ -1,33 +1,34 @@
 package crypto_service
 
 import (
-	"encoding/base64"
 	"encoding/hex"
-	"errors"
 
-	"github.com/sheason2019/spoved/exceptions/exception"
+	"github.com/pkg/errors"
 )
 
 // 加密
-func EncodeString(content string) string {
+func EncodeString(content string) (string, error) {
 	k := MustGetRsaPair()
 
-	cipherBuf := RsaEncrypt([]byte(content), []byte(k.PubKey))
-	return hex.EncodeToString(cipherBuf)
+	cipherBuf, err := RsaEncrypt([]byte(content), []byte(k.PubKey))
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(cipherBuf), nil
 }
 
 // 解密
-func DecodeString(cipherText string) (string, *exception.Exception) {
+func DecodeString(cipherText string) (string, error) {
 	k := MustGetRsaPair()
 
-	cipherPassword, err := base64.StdEncoding.DecodeString(cipherText)
+	cipherPassword, err := hex.DecodeString(cipherText)
 	if err != nil {
-		return "", exception.New(errors.New("密文解析失败"))
+		return "", errors.WithStack(errors.New("密文解析失败"))
 	}
-	buf := []byte(cipherPassword)
-	content, e := RsaDecrypt(buf, []byte(k.PrvKey))
+
+	content, e := RsaDecrypt(cipherPassword, []byte(k.PrvKey))
 	if e != nil {
-		return "", e.Wrap()
+		return "", e
 	}
 	return string(content), nil
 }

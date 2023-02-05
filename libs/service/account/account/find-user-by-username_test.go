@@ -11,7 +11,7 @@ func TestExist(t *testing.T) {
 	name := "sheason"
 	usr, e := account_service.FindUserByUsername(name)
 	if e != nil {
-		e.Panic()
+		t.Errorf("%+v", e)
 	}
 	fmt.Println(usr)
 }
@@ -23,5 +23,5 @@ func TestNotExist(t *testing.T) {
 		return
 	}
 
-	e.Panic()
+	t.Errorf("%+v", e)
 }

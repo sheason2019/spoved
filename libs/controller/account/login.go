@@ -1,6 +1,8 @@
 package account_controller
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sheason2019/spoved/libs/idl-lib/account"
 	"github.com/sheason2019/spoved/libs/middleware"
@@ -10,7 +12,7 @@ import (
 func (AccountController) Login(c *gin.Context, info account.AccountInfo) account.LoginResponse {
 	token, e := login_service.Login(&info)
 	if e != nil {
-		e.Panic()
+		panic(fmt.Sprintf("%+v", e))
 	}
 
 	return account.LoginResponse{

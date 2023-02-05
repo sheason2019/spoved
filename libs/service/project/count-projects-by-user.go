@@ -3,14 +3,14 @@ package project_service
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	"github.com/sheason2019/spoved/ent"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
-	"github.com/sheason2019/spoved/exceptions/exception"
 	"github.com/sheason2019/spoved/libs/dbc"
 )
 
-func CountProjectsByUser(usr *ent.User) (int, *exception.Exception) {
+func CountProjectsByUser(usr *ent.User) (int, error) {
 	client := dbc.GetClient()
 
 	count, err := client.Project.Query().
@@ -21,7 +21,7 @@ func CountProjectsByUser(usr *ent.User) (int, *exception.Exception) {
 		).
 		Count(context.Background())
 	if err != nil {
-		return 0, exception.New(err)
+		return 0, errors.WithStack(err)
 	}
 
 	return count, nil

@@ -3,13 +3,13 @@ package account_service
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	"github.com/sheason2019/spoved/ent"
 	"github.com/sheason2019/spoved/ent/user"
-	"github.com/sheason2019/spoved/exceptions/exception"
 	"github.com/sheason2019/spoved/libs/dbc"
 )
 
-func FindUserByUsername(username string) (*ent.User, *exception.Exception) {
+func FindUserByUsername(username string) (*ent.User, error) {
 	client := dbc.GetClient()
 
 	user, err := client.User.
@@ -20,7 +20,7 @@ func FindUserByUsername(username string) (*ent.User, *exception.Exception) {
 		return nil, nil
 	}
 	if err != nil {
-		return nil, exception.New(err)
+		return nil, errors.WithStack(err)
 	}
 
 	return user, nil
