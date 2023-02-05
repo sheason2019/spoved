@@ -14,9 +14,19 @@ import (
 	"time"
 
 	"github.com/sheason2019/spoved/exceptions/exception"
+	"github.com/sheason2019/spoved/libs/env"
+	"github.com/sheason2019/spoved/libs/utils"
 )
 
-const path_root = "/var/spoved/data/"
+var path_root string
+
+func init() {
+	if env.IS_PRODUCT {
+		path_root = "data"
+	} else {
+		path_root = utils.GetRootPath() + "/data"
+	}
+}
 
 func Read(path string) (string, error) {
 	c, e := os.ReadFile(path_root + path)
@@ -59,6 +69,8 @@ func Mkdir(path string) {
 
 func GitClone(url, dir, branch string) (string, *exception.Exception) {
 	dir = path_root + dir
+
+	fmt.Println(dir)
 
 	outputs := []string{}
 
