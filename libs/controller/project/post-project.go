@@ -1,8 +1,6 @@
 package project_controller
 
 import (
-	"fmt"
-
 	"github.com/gin-gonic/gin"
 	"github.com/sheason2019/spoved/libs/idl-lib/project"
 	"github.com/sheason2019/spoved/libs/middleware"
@@ -14,7 +12,7 @@ func (ProjectController) PostProject(ctx *gin.Context, proj project.Project) pro
 
 	entProj, e := project_service.CreateProject(&proj, usr)
 	if e != nil {
-		panic(fmt.Sprintf("%+v", e))
+		panic(e)
 	}
 
 	return project.Project{

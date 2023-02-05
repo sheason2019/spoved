@@ -2,7 +2,6 @@ package project_controller
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sheason2019/spoved/libs/idl-lib/project"
@@ -14,7 +13,7 @@ import (
 func (ProjectController) GetProject(ctx *gin.Context, payload project.GetProjectPayload) project.Project {
 	proj, e := project_service.FindProject(payload.Username, payload.ProjectName)
 	if e != nil {
-		panic(fmt.Sprintf("%+v", e))
+		panic(e)
 	}
 	if proj == nil {
 		panic(errors.New("指定的Project不存在"))
