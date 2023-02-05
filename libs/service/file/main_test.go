@@ -8,7 +8,7 @@ import (
 )
 
 func TestGitClone(t *testing.T) {
-	output, err := file_service.GitClone("https://github.com/sheason2019/node-template", "/repos/node-template/0.0.1", "master")
+	output, err := file_service.GitClone("git@github.com:sheason2019/node-template.git", "/repos/node-template/0.0.1", "master", "sheason")
 	if err != nil {
 		t.Errorf("%+v", err)
 	}

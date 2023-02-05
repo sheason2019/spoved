@@ -9,7 +9,7 @@ import (
 )
 
 // 编译项目
-func Compile(image, version, branch string, projectId int) error {
+func Compile(image, version, branch string, projectId int, username string) error {
 	// 操作人权限校验
 	// 镜像校验
 	if !ValidateImage(image) {
@@ -45,7 +45,7 @@ func Compile(image, version, branch string, projectId int) error {
 	projDir := proj.DirPath + "/" + nv
 
 	// 拉取代码
-	output, err := file_service.GitClone(proj.GitURL, projDir, branch)
+	output, err := file_service.GitClone(proj.GitURL, projDir, branch, username)
 	if err != nil {
 		return err
 	}

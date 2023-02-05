@@ -9,7 +9,7 @@ import (
 )
 
 var usr = ent.User{
-	Username: "sheason2019",
+	Username: "sheason",
 }
 
 func TestGenerateKey(t *testing.T) {

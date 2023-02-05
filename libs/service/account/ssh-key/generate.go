@@ -21,9 +21,12 @@ func GenerateSshKey(usr *ent.User) error {
 	os.MkdirAll(dirPath, os.ModePerm)
 
 	var out bytes.Buffer
-	cmd := exec.Command("/bin/bash", "-c", "ssh-keygen -N rsa -f "+dirPath+"/id_rsa <<< y")
+	cmd := exec.Command("/bin/bash", "-c", "ssh-keygen -N \"\" -f "+dirPath+"/id_rsa <<< y")
 	cmd.Stderr = &out
 	cmd.Stdout = &out
+
+	configString := "StrictHostKeyChecking no\nUserKnownHostsFile /dev/null"
+	os.WriteFile(dirPath+"/config", []byte(configString), os.ModePerm)
 
 	err := cmd.Run()
 	if err != nil {

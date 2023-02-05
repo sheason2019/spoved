@@ -66,35 +66,23 @@ func Mkdir(path string) {
 	os.MkdirAll(path, os.ModePerm)
 }
 
-func GitClone(url, dir, branch string) (string, error) {
-	dir = path_root + dir
-
-	fmt.Println(dir)
+func GitClone(url, codeDir, branch, username string) (string, error) {
+	codeDir = path_root + codeDir
+	sshDir := path_root + "/account/" + username + "/.ssh"
 
 	outputs := []string{}
 
-	os.RemoveAll(dir)
+	os.RemoveAll(codeDir)
 
-	err := gitClone(context.Background(), url, dir)
+	err := gitClone(context.Background(), url, branch, codeDir, sshDir)
 	if err != nil {
 		return "", err
-	}
-
-	if branch != "master" {
-		output, err := exec.Command(
-			"sh",
-			"-c",
-			fmt.Sprintf("cd %s\ngit fetch origin %s\ngit checkout %s\ngit pull", dir, branch, branch),
-		).Output()
-		if err != nil {
-			outputs = append(outputs, string(output))
-		}
 	}
 
 	return strings.Join(outputs, "\n"), nil
 }
 
-func gitClone(ctx context.Context, url, dir string) error {
+func gitClone(ctx context.Context, url, branch, codeDir, sshDir string) error {
 	toCtx, cancel := context.WithTimeout(ctx, time.Second*15)
 	defer cancel()
 
@@ -106,8 +94,20 @@ func gitClone(ctx context.Context, url, dir string) error {
 	}
 
 	go func(ctx context.Context) {
-		os.RemoveAll(dir)
-		cmd := exec.Command("git", "clone", "--progress", "--depth", "1", url, dir)
+		os.RemoveAll(codeDir)
+		cmd := exec.Command(
+			"docker",
+			"run",
+			"-v",
+			codeDir+":/code",
+			"-v",
+			sshDir+":/root/.ssh",
+			"bitnami/git:latest",
+			"/bin/bash",
+			"-c",
+			cloneSh(url, branch),
+		)
+		fmt.Println(cmd.Args)
 		cmd.Stderr = cmdOut.Output
 		cmd.Stdout = cmdOut.Output
 
@@ -122,16 +122,16 @@ func gitClone(ctx context.Context, url, dir string) error {
 	case <-toCtx.Done():
 		break
 	case <-time.After(time.Second * 15):
+		fmt.Println(cmdOut.Output.String())
 		return errors.WithStack(errors.New("拉取仓库超时"))
 	}
 
 	if cmdOut.err != nil {
+		fmt.Println(cmdOut.Output.String())
 		return errors.WithStack(cmdOut.err)
 	}
 	return nil
 }
-
-// func checkoutBranch(ctx context.Context, dir, branch string) {}
 
 func GetAbsPath(p string) (string, error) {
 	if path.IsAbs(p) {

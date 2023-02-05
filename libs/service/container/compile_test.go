@@ -7,7 +7,7 @@ import (
 )
 
 func TestCompile(t *testing.T) {
-	e := container_service.Compile("node:16-alpine", "Patch", "master", 1)
+	e := container_service.Compile("node:16-alpine", "Patch", "master", 1, "sheason")
 	if e != nil {
 		t.Errorf("%+v", e)
 		return

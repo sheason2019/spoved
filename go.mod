@@ -8,7 +8,7 @@ require (
 	github.com/go-playground/assert/v2 v2.0.1
 )
 
-require github.com/golang-jwt/jwt/v4 v4.4.3 // indirect
+require github.com/golang-jwt/jwt/v4 v4.4.3
 
 require (
 	ariga.io/atlas v0.9.1-0.20230119123307-a3ab6808892b // indirect
