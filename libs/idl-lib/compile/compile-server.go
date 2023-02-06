@@ -6,7 +6,7 @@ import (
 )
 
 type CompileApi interface {
-	PostCompile(ctx *gin.Context, payload CompileRecord) CompileRecord
+	PostCompile(ctx *gin.Context, payload CompileRecord)
 	GetCompileRecords(ctx *gin.Context, pagination common.Pagination) GetCompileRecordResponse
 }
 type _compileApiDefinition struct {

@@ -1,4 +1,4 @@
-package container_service
+package images
 
 var optional_images = []string{"node:16-alpine"}
 

@@ -1,4 +1,4 @@
-package container_service
+package compile_service
 
 import (
 	"fmt"

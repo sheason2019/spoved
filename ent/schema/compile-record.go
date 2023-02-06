@@ -17,6 +17,7 @@ func (CompileRecord) Fields() []ent.Field {
 		field.String("version"),
 		field.String("image"),
 		field.Time("created_at"),
+		// 0表示执行中 1表示成功 -1表示失败
 		field.Int("status_code"),
 		field.String("output"),
 		field.String("branch"),
