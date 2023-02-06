@@ -3,10 +3,8 @@ package git_service
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -28,19 +26,12 @@ func GitClone(url, codeDir, branch, username string) (string, error) {
 	codeDir = path_root + codeDir
 	sshDir := path_root + "/account/" + username + "/.ssh"
 
-	outputs := []string{}
-
 	os.RemoveAll(codeDir)
 
-	err := gitClone(context.Background(), url, branch, codeDir, sshDir)
-	if err != nil {
-		return "", err
-	}
-
-	return strings.Join(outputs, "\n"), nil
+	return gitClone(context.Background(), url, branch, codeDir, sshDir)
 }
 
-func gitClone(ctx context.Context, url, branch, codeDir, sshDir string) error {
+func gitClone(ctx context.Context, url, branch, codeDir, sshDir string) (string, error) {
 	toCtx, cancel := context.WithTimeout(ctx, time.Second*15)
 	defer cancel()
 
@@ -65,7 +56,7 @@ func gitClone(ctx context.Context, url, branch, codeDir, sshDir string) error {
 			"-c",
 			cloneSh(url, branch),
 		)
-		fmt.Println(cmd.Args)
+
 		cmd.Stderr = cmdOut.Output
 		cmd.Stdout = cmdOut.Output
 
@@ -80,13 +71,11 @@ func gitClone(ctx context.Context, url, branch, codeDir, sshDir string) error {
 	case <-toCtx.Done():
 		break
 	case <-time.After(time.Second * 15):
-		fmt.Println(cmdOut.Output.String())
-		return errors.WithStack(errors.New("拉取仓库超时"))
+		return cmdOut.Output.String(), errors.WithStack(errors.New("拉取仓库超时"))
 	}
 
 	if cmdOut.err != nil {
-		fmt.Println(cmdOut.Output.String())
-		return errors.WithStack(cmdOut.err)
+		return cmdOut.Output.String(), errors.WithStack(cmdOut.err)
 	}
-	return nil
+	return cmdOut.Output.String(), nil
 }
