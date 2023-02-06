@@ -17,7 +17,7 @@ func TestCompile(t *testing.T) {
 		return
 	}
 
-	output, e := compile_service.CompileRun("node:16-alpine", "Patch", "master", proj, "sheason")
+	output, e := compile_service.CompileRun("node:16-alpine", "Patch", "0.0.2", proj, "sheason")
 	fmt.Println("output::\n", output)
 	if e != nil {
 		t.Errorf("%+v", e)
@@ -26,7 +26,7 @@ func TestCompile(t *testing.T) {
 }
 
 func TestCompileRun(t *testing.T) {
-	output, e := compile_service.CompileRunBuild(context.Background(), env.DataRoot+"/repos/sheason/node-template/0.0.1")
+	output, e := compile_service.CompileRunBuild(context.Background(), env.DataRoot+"/repos/sheason/node-template/0.0.2")
 	fmt.Println(output)
 	if e != nil {
 		t.Errorf("%+v", e)

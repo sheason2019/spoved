@@ -17,7 +17,7 @@ func TimeoutFunc(ctx context.Context, fn func(ctx context.Context, cancel func()
 	case <-toCtx.Done():
 		break
 	case <-time.After(duration * time.Millisecond):
-		return errors.WithStack(errors.New("拉取仓库超时"))
+		return errors.WithStack(errors.New("定时任务超时"))
 	}
 
 	return nil

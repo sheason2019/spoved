@@ -1,20 +1,5 @@
 package account
 
-type User struct {
-	Username string `json:"username" form:"username"`
-}
-
-type AccountInfo struct {
-	Username string `json:"username" form:"username"`
-	Password string `json:"password" form:"password"`
-	Salt     string `json:"salt" form:"salt"`
-}
-
-type AccountCrypto struct {
-	Salt   string `json:"salt" form:"salt"`
-	PubKey string `json:"pubKey" form:"pubKey"`
-}
-
 type LoginResponse struct {
 	Token string `json:"token" form:"token"`
 }
@@ -28,5 +13,20 @@ type GetUsernameRepeatPayload struct {
 }
 
 type GetSshPubKeyResponse struct {
+	PubKey string `json:"pubKey" form:"pubKey"`
+}
+
+type User struct {
+	Username string `json:"username" form:"username"`
+}
+
+type AccountInfo struct {
+	Username string `json:"username" form:"username"`
+	Password string `json:"password" form:"password"`
+	Salt     string `json:"salt" form:"salt"`
+}
+
+type AccountCrypto struct {
+	Salt   string `json:"salt" form:"salt"`
 	PubKey string `json:"pubKey" form:"pubKey"`
 }

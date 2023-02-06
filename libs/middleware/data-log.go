@@ -53,15 +53,16 @@ func JsonStr(v any) string {
 // 展示返回值的内容
 func ShowBodyString(body []byte) string {
 	if len(body) == 0 {
-		return "{}"
-	}
-	m := make(map[string]any)
-	err := json.Unmarshal(body, &m)
-	if err != nil {
-		panic(err)
+		return "<nil>"
 	}
 
-	return JsonStr(m)
+	var buf bytes.Buffer
+	err := json.Indent(&buf, body, "", "  ")
+	if err != nil {
+		return string(body)
+	}
+
+	return buf.String()
 }
 
 // 获取请求的参数

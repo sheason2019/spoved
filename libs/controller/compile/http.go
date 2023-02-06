@@ -11,4 +11,5 @@ var cc compile.CompileApi = compileController{}
 
 func BindController(r *gin.Engine) {
 	bindPostCompile(r)
+	bindGetCompileRecords(r)
 }

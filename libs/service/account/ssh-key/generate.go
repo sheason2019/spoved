@@ -7,7 +7,7 @@ import (
 	"os/exec"
 
 	"github.com/sheason2019/spoved/ent"
-	"github.com/sheason2019/spoved/libs/utils"
+	"github.com/sheason2019/spoved/libs/env"
 )
 
 type SshKeyPair struct {
@@ -17,7 +17,7 @@ type SshKeyPair struct {
 
 // 为指定用户创建ssh key
 func GenerateSshKey(usr *ent.User) error {
-	dirPath := utils.GetRootPath() + "/data/account/" + usr.Username + "/.ssh"
+	dirPath := env.DataRoot + "/account/" + usr.Username + "/.ssh"
 	os.MkdirAll(dirPath, os.ModePerm)
 
 	var out bytes.Buffer
@@ -37,7 +37,7 @@ func GenerateSshKey(usr *ent.User) error {
 
 // 获取指定用户的ssh key
 func GetSshKey(usr *ent.User) (*SshKeyPair, error) {
-	dirPath := utils.GetRootPath() + "/data/account/" + usr.Username + "/.ssh"
+	dirPath := env.DataRoot + "/account/" + usr.Username + "/.ssh"
 	priv, err := readFile(dirPath + "/id_rsa")
 	if err != nil {
 		return nil, err

@@ -17,6 +17,7 @@ func FindLastRecordByProjectId(id int) (*ent.CompileRecord, error) {
 				project.IDEQ(id),
 			),
 		).
+		Order(ent.Desc(compilerecord.FieldCreatedAt)).
 		First(context.Background())
 	if ent.IsNotFound(err) {
 		return nil, nil

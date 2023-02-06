@@ -19,25 +19,25 @@ func Compile(ctx context.Context, image, nextVersion, branch string, proj *ent.P
 		SetImage(image).
 		SetStatusCode(statusCode).
 		SetVersion(nextVersion).
+		SetOutput("").
 		AddOperator(usr).
 		AddProject(proj).
 		Save(ctx)
-	if err != nil {
-		return record, err
-	}
 
-	output, err := CompileRun(image, nextVersion, branch, proj, usr.Username)
+	go func() {
+		output, err := CompileRun(image, nextVersion, branch, proj, usr.Username)
 
-	if err != nil {
-		statusCode = -1
-	} else {
-		statusCode = 1
-	}
+		if err != nil {
+			statusCode = -1
+		} else {
+			statusCode = 1
+		}
 
-	record, err = client.CompileRecord.UpdateOne(record).
-		SetStatusCode(statusCode).
-		SetOutput(strings.Join(output, "\n")).
-		Save(ctx)
+		client.CompileRecord.UpdateOne(record).
+			SetStatusCode(statusCode).
+			SetOutput(strings.Join(output, "\n")).
+			SaveX(context.Background())
+	}()
 
 	return record, err
 }

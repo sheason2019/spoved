@@ -2,6 +2,7 @@ package compile_service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -34,10 +35,12 @@ func CompileRunBuild(ctx context.Context, dir string) (output string, err error)
 			"/app/build.sh",
 		)
 
+		fmt.Println(cmd.Cmd.Args)
+
 		err = cmd.Run()
 		output = cmd.Output.String()
 		cancel()
-	}, 30*60*time.Second)
+	}, 15*time.Second)
 
 	return string(output), err
 }

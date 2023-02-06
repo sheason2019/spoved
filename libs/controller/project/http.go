@@ -9,7 +9,7 @@ type ProjectController struct{}
 
 var pc project.ProjectApi = ProjectController{}
 
-func BindProjectController(r *gin.Engine) {
+func BindController(r *gin.Engine) {
 	bindPostProject(r)
 	bindGetProjects(r)
 	bindGetProject(r)
