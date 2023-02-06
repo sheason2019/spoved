@@ -26,7 +26,6 @@ func CompileRun(dir string) (string, error) {
 
 	// 若存在则执行 build shell
 	output, err := exec.Command(
-		"sudo",
 		"docker",
 		"run",
 		"--entrypoint",

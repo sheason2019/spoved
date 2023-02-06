@@ -1,11 +1,8 @@
 package git_service
 
 import (
-	"bytes"
 	"context"
 	"os"
-	"os/exec"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sheason2019/spoved/libs/env"
@@ -32,19 +29,12 @@ func GitClone(url, codeDir, branch, username string) (string, error) {
 }
 
 func gitClone(ctx context.Context, url, branch, codeDir, sshDir string) (string, error) {
-	toCtx, cancel := context.WithTimeout(ctx, time.Second*15)
-	defer cancel()
+	var err error
+	var output string
 
-	cmdOut := struct {
-		Output *bytes.Buffer
-		err    error
-	}{
-		Output: bytes.NewBuffer([]byte{}),
-	}
-
-	go func(ctx context.Context) {
+	utils.TimeoutFunc(ctx, func(ctx context.Context) {
 		os.RemoveAll(codeDir)
-		cmd := exec.Command(
+		cmd := utils.OutputCommand(
 			"docker",
 			"run",
 			"-v",
@@ -57,25 +47,12 @@ func gitClone(ctx context.Context, url, branch, codeDir, sshDir string) (string,
 			cloneSh(url, branch),
 		)
 
-		cmd.Stderr = cmdOut.Output
-		cmd.Stdout = cmdOut.Output
+		err = cmd.Run()
+		output = cmd.Output.String()
+	}, 15*1000)
 
-		err := cmd.Run()
-		if err != nil {
-			cmdOut.err = err
-		}
-		cancel()
-	}(toCtx)
-
-	select {
-	case <-toCtx.Done():
-		break
-	case <-time.After(time.Second * 15):
-		return cmdOut.Output.String(), errors.WithStack(errors.New("拉取仓库超时"))
+	if err != nil {
+		return output, errors.WithStack(err)
 	}
-
-	if cmdOut.err != nil {
-		return cmdOut.Output.String(), errors.WithStack(cmdOut.err)
-	}
-	return cmdOut.Output.String(), nil
+	return output, nil
 }
