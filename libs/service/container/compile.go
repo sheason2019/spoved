@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	file_service "github.com/sheason2019/spoved/libs/service/file"
+	git_service "github.com/sheason2019/spoved/libs/service/git"
 	project_service "github.com/sheason2019/spoved/libs/service/project"
 )
 
@@ -45,7 +45,7 @@ func Compile(image, version, branch string, projectId int, username string) erro
 	projDir := proj.DirPath + "/" + nv
 
 	// 拉取代码
-	output, err := file_service.GitClone(proj.GitURL, projDir, branch, username)
+	output, err := git_service.GitClone(proj.GitURL, projDir, branch, username)
 	if err != nil {
 		return err
 	}

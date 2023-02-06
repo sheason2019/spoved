@@ -1,4 +1,4 @@
-package file_service
+package git_service
 
 import "fmt"
 
