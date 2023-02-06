@@ -1,9 +1,11 @@
 package container_service
 
 import (
+	"context"
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/sheason2019/spoved/libs/env"
 	git_service "github.com/sheason2019/spoved/libs/service/git"
 	project_service "github.com/sheason2019/spoved/libs/service/project"
 )
@@ -43,7 +45,7 @@ func Compile(image, version, branch string, projectId int, username string) (str
 	}
 
 	// Git代码复制到的地址
-	projDir := "/" + proj.DirPath + "/" + nv
+	projDir := env.DataRoot + proj.DirPath + "/" + nv
 
 	// 拉取代码
 	output, err := git_service.GitClone(proj.GitURL, projDir, branch, username)
@@ -53,9 +55,9 @@ func Compile(image, version, branch string, projectId int, username string) (str
 	outputs = append(outputs, output)
 
 	// 执行编译命令
-	output, err = CompileRun(projDir)
+	output, err = CompileRun(context.Background(), projDir)
 	if err != nil {
-		return "", err
+		return output, err
 	}
 	outputs = append(outputs, output)
 

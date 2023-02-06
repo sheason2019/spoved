@@ -7,11 +7,11 @@ import (
 	"github.com/pkg/errors"
 )
 
-func TimeoutFunc(ctx context.Context, fn func(ctx context.Context), duration time.Duration) error {
-	toCtx, cancel := context.WithTimeout(ctx, duration*time.Millisecond)
+func TimeoutFunc(ctx context.Context, fn func(ctx context.Context, cancel func()), duration time.Duration) error {
+	toCtx, cancel := context.WithTimeout(ctx, duration)
 	defer cancel()
 
-	go fn(toCtx)
+	go fn(toCtx, cancel)
 
 	select {
 	case <-toCtx.Done():

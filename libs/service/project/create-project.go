@@ -25,7 +25,7 @@ func CreateProject(proj *project_idl.Project, creator *ent.User) (*ent.Project, 
 		SetProjectName(proj.ProjectName).
 		SetDescribe(proj.Describe).
 		SetGitURL(proj.GitUrl).
-		SetDirPath(fmt.Sprintf("repos/%s/%s", creator.Username, proj.ProjectName)).
+		SetDirPath(fmt.Sprintf("/repos/%s/%s", creator.Username, proj.ProjectName)).
 		SetCreatedAt(time.Now()).
 		AddCreator(creator).
 		Save(context.Background())

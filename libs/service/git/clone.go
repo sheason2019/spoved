@@ -3,38 +3,20 @@ package git_service
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sheason2019/spoved/libs/env"
 	"github.com/sheason2019/spoved/libs/utils"
+	output_command "github.com/sheason2019/spoved/libs/utils/output-command"
 )
 
-var path_root string
+func GitClone(url, codeDir, branch, username string) (output string, err error) {
+	sshDir := env.DataRoot + "/account/" + username + "/.ssh"
 
-func init() {
-	if env.IS_PRODUCT {
-		path_root = "data"
-	} else {
-		path_root = utils.GetRootPath() + "/data"
-	}
-}
-
-func GitClone(url, codeDir, branch, username string) (string, error) {
-	codeDir = path_root + codeDir
-	sshDir := path_root + "/account/" + username + "/.ssh"
-
-	os.RemoveAll(codeDir)
-
-	return gitClone(context.Background(), url, branch, codeDir, sshDir)
-}
-
-func gitClone(ctx context.Context, url, branch, codeDir, sshDir string) (string, error) {
-	var err error
-	var output string
-
-	utils.TimeoutFunc(ctx, func(ctx context.Context) {
+	utils.TimeoutFunc(context.Background(), func(ctx context.Context, cancel func()) {
 		os.RemoveAll(codeDir)
-		cmd := utils.OutputCommand(
+		cmd := output_command.Command(
 			"docker",
 			"run",
 			"-v",
@@ -49,7 +31,8 @@ func gitClone(ctx context.Context, url, branch, codeDir, sshDir string) (string,
 
 		err = cmd.Run()
 		output = cmd.Output.String()
-	}, 15*1000)
+		cancel()
+	}, 15*time.Second)
 
 	if err != nil {
 		return output, errors.WithStack(err)

@@ -3,26 +3,13 @@ package file_service
 
 import (
 	"os"
-	"path"
-	"path/filepath"
 	"strings"
 
 	"github.com/sheason2019/spoved/libs/env"
-	"github.com/sheason2019/spoved/libs/utils"
 )
 
-var path_root string
-
-func init() {
-	if env.IS_PRODUCT {
-		path_root = "data"
-	} else {
-		path_root = utils.GetRootPath() + "/data"
-	}
-}
-
 func Read(path string) (string, error) {
-	c, e := os.ReadFile(path_root + path)
+	c, e := os.ReadFile(env.DataRoot + path)
 	return string(c), e
 }
 
@@ -32,7 +19,7 @@ func Write(c, path string) error {
 		return err
 	}
 
-	path = path_root + path
+	path = env.DataRoot + path
 	if !exist {
 		os.MkdirAll(path[:strings.LastIndex(path, "/")], os.ModePerm)
 	}
@@ -41,8 +28,6 @@ func Write(c, path string) error {
 }
 
 func Exist(path string) (bool, error) {
-	path = path_root + path
-
 	_, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -55,17 +40,7 @@ func Exist(path string) (bool, error) {
 }
 
 func Mkdir(path string) {
-	path = path_root + path
+	path = env.DataRoot + path
 
 	os.MkdirAll(path, os.ModePerm)
-}
-
-func GetAbsPath(p string) (string, error) {
-	if path.IsAbs(p) {
-		return p, nil
-	}
-
-	p = path_root + p
-
-	return filepath.Abs(p)
 }
