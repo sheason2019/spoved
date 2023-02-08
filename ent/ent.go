@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/sheason2019/spoved/ent/compilerecord"
+	"github.com/sheason2019/spoved/ent/deployrecord"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
 )
@@ -42,6 +43,7 @@ type OrderFunc func(*sql.Selector)
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		compilerecord.Table: compilerecord.ValidColumn,
+		deployrecord.Table:  deployrecord.ValidColumn,
 		project.Table:       project.ValidColumn,
 		user.Table:          user.ValidColumn,
 	}

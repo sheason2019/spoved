@@ -39,9 +39,11 @@ type CompileRecordEdges struct {
 	Operator []*User `json:"operator,omitempty"`
 	// Project holds the value of the project edge.
 	Project []*Project `json:"project,omitempty"`
+	// DeployRecords holds the value of the deploy_records edge.
+	DeployRecords []*DeployRecord `json:"deploy_records,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // OperatorOrErr returns the Operator value or an error if the edge
@@ -60,6 +62,15 @@ func (e CompileRecordEdges) ProjectOrErr() ([]*Project, error) {
 		return e.Project, nil
 	}
 	return nil, &NotLoadedError{edge: "project"}
+}
+
+// DeployRecordsOrErr returns the DeployRecords value or an error if the edge
+// was not loaded in eager-loading.
+func (e CompileRecordEdges) DeployRecordsOrErr() ([]*DeployRecord, error) {
+	if e.loadedTypes[2] {
+		return e.DeployRecords, nil
+	}
+	return nil, &NotLoadedError{edge: "deploy_records"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -143,6 +154,11 @@ func (cr *CompileRecord) QueryOperator() *UserQuery {
 // QueryProject queries the "project" edge of the CompileRecord entity.
 func (cr *CompileRecord) QueryProject() *ProjectQuery {
 	return NewCompileRecordClient(cr.config).QueryProject(cr)
+}
+
+// QueryDeployRecords queries the "deploy_records" edge of the CompileRecord entity.
+func (cr *CompileRecord) QueryDeployRecords() *DeployRecordQuery {
+	return NewCompileRecordClient(cr.config).QueryDeployRecords(cr)
 }
 
 // Update returns a builder for updating this CompileRecord.

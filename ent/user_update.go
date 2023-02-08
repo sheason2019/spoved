@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/sheason2019/spoved/ent/compilerecord"
+	"github.com/sheason2019/spoved/ent/deployrecord"
 	"github.com/sheason2019/spoved/ent/predicate"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
@@ -84,6 +85,21 @@ func (uu *UserUpdate) AddCompileRecords(c ...*CompileRecord) *UserUpdate {
 	return uu.AddCompileRecordIDs(ids...)
 }
 
+// AddDeployRecordIDs adds the "deploy_records" edge to the DeployRecord entity by IDs.
+func (uu *UserUpdate) AddDeployRecordIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddDeployRecordIDs(ids...)
+	return uu
+}
+
+// AddDeployRecords adds the "deploy_records" edges to the DeployRecord entity.
+func (uu *UserUpdate) AddDeployRecords(d ...*DeployRecord) *UserUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return uu.AddDeployRecordIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -129,6 +145,27 @@ func (uu *UserUpdate) RemoveCompileRecords(c ...*CompileRecord) *UserUpdate {
 		ids[i] = c[i].ID
 	}
 	return uu.RemoveCompileRecordIDs(ids...)
+}
+
+// ClearDeployRecords clears all "deploy_records" edges to the DeployRecord entity.
+func (uu *UserUpdate) ClearDeployRecords() *UserUpdate {
+	uu.mutation.ClearDeployRecords()
+	return uu
+}
+
+// RemoveDeployRecordIDs removes the "deploy_records" edge to DeployRecord entities by IDs.
+func (uu *UserUpdate) RemoveDeployRecordIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveDeployRecordIDs(ids...)
+	return uu
+}
+
+// RemoveDeployRecords removes "deploy_records" edges to DeployRecord entities.
+func (uu *UserUpdate) RemoveDeployRecords(d ...*DeployRecord) *UserUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return uu.RemoveDeployRecordIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -296,6 +333,60 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.DeployRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.DeployRecordsTable,
+			Columns: user.DeployRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: deployrecord.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedDeployRecordsIDs(); len(nodes) > 0 && !uu.mutation.DeployRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.DeployRecordsTable,
+			Columns: user.DeployRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: deployrecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.DeployRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.DeployRecordsTable,
+			Columns: user.DeployRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: deployrecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -370,6 +461,21 @@ func (uuo *UserUpdateOne) AddCompileRecords(c ...*CompileRecord) *UserUpdateOne 
 	return uuo.AddCompileRecordIDs(ids...)
 }
 
+// AddDeployRecordIDs adds the "deploy_records" edge to the DeployRecord entity by IDs.
+func (uuo *UserUpdateOne) AddDeployRecordIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddDeployRecordIDs(ids...)
+	return uuo
+}
+
+// AddDeployRecords adds the "deploy_records" edges to the DeployRecord entity.
+func (uuo *UserUpdateOne) AddDeployRecords(d ...*DeployRecord) *UserUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return uuo.AddDeployRecordIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -415,6 +521,27 @@ func (uuo *UserUpdateOne) RemoveCompileRecords(c ...*CompileRecord) *UserUpdateO
 		ids[i] = c[i].ID
 	}
 	return uuo.RemoveCompileRecordIDs(ids...)
+}
+
+// ClearDeployRecords clears all "deploy_records" edges to the DeployRecord entity.
+func (uuo *UserUpdateOne) ClearDeployRecords() *UserUpdateOne {
+	uuo.mutation.ClearDeployRecords()
+	return uuo
+}
+
+// RemoveDeployRecordIDs removes the "deploy_records" edge to DeployRecord entities by IDs.
+func (uuo *UserUpdateOne) RemoveDeployRecordIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveDeployRecordIDs(ids...)
+	return uuo
+}
+
+// RemoveDeployRecords removes "deploy_records" edges to DeployRecord entities.
+func (uuo *UserUpdateOne) RemoveDeployRecords(d ...*DeployRecord) *UserUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return uuo.RemoveDeployRecordIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -598,6 +725,60 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: compilerecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.DeployRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.DeployRecordsTable,
+			Columns: user.DeployRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: deployrecord.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedDeployRecordsIDs(); len(nodes) > 0 && !uuo.mutation.DeployRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.DeployRecordsTable,
+			Columns: user.DeployRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: deployrecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.DeployRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.DeployRecordsTable,
+			Columns: user.DeployRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: deployrecord.FieldID,
 				},
 			},
 		}

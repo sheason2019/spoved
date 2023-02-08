@@ -24,6 +24,7 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("projects", Project.Type),
 		edge.To("compile_records", CompileRecord.Type),
+		edge.To("deploy_records", DeployRecord.Type),
 	}
 }
 

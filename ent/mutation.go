@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/sheason2019/spoved/ent/compilerecord"
+	"github.com/sheason2019/spoved/ent/deployrecord"
 	"github.com/sheason2019/spoved/ent/predicate"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
@@ -28,6 +29,7 @@ const (
 
 	// Node types.
 	TypeCompileRecord = "CompileRecord"
+	TypeDeployRecord  = "DeployRecord"
 	TypeProject       = "Project"
 	TypeUser          = "User"
 )
@@ -35,26 +37,29 @@ const (
 // CompileRecordMutation represents an operation that mutates the CompileRecord nodes in the graph.
 type CompileRecordMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *int
-	version         *string
-	image           *string
-	created_at      *time.Time
-	status_code     *int
-	addstatus_code  *int
-	output          *string
-	branch          *string
-	clearedFields   map[string]struct{}
-	operator        map[int]struct{}
-	removedoperator map[int]struct{}
-	clearedoperator bool
-	project         map[int]struct{}
-	removedproject  map[int]struct{}
-	clearedproject  bool
-	done            bool
-	oldValue        func(context.Context) (*CompileRecord, error)
-	predicates      []predicate.CompileRecord
+	op                    Op
+	typ                   string
+	id                    *int
+	version               *string
+	image                 *string
+	created_at            *time.Time
+	status_code           *int
+	addstatus_code        *int
+	output                *string
+	branch                *string
+	clearedFields         map[string]struct{}
+	operator              map[int]struct{}
+	removedoperator       map[int]struct{}
+	clearedoperator       bool
+	project               map[int]struct{}
+	removedproject        map[int]struct{}
+	clearedproject        bool
+	deploy_records        map[int]struct{}
+	removeddeploy_records map[int]struct{}
+	cleareddeploy_records bool
+	done                  bool
+	oldValue              func(context.Context) (*CompileRecord, error)
+	predicates            []predicate.CompileRecord
 }
 
 var _ ent.Mutation = (*CompileRecordMutation)(nil)
@@ -499,6 +504,60 @@ func (m *CompileRecordMutation) ResetProject() {
 	m.removedproject = nil
 }
 
+// AddDeployRecordIDs adds the "deploy_records" edge to the DeployRecord entity by ids.
+func (m *CompileRecordMutation) AddDeployRecordIDs(ids ...int) {
+	if m.deploy_records == nil {
+		m.deploy_records = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.deploy_records[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDeployRecords clears the "deploy_records" edge to the DeployRecord entity.
+func (m *CompileRecordMutation) ClearDeployRecords() {
+	m.cleareddeploy_records = true
+}
+
+// DeployRecordsCleared reports if the "deploy_records" edge to the DeployRecord entity was cleared.
+func (m *CompileRecordMutation) DeployRecordsCleared() bool {
+	return m.cleareddeploy_records
+}
+
+// RemoveDeployRecordIDs removes the "deploy_records" edge to the DeployRecord entity by IDs.
+func (m *CompileRecordMutation) RemoveDeployRecordIDs(ids ...int) {
+	if m.removeddeploy_records == nil {
+		m.removeddeploy_records = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.deploy_records, ids[i])
+		m.removeddeploy_records[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDeployRecords returns the removed IDs of the "deploy_records" edge to the DeployRecord entity.
+func (m *CompileRecordMutation) RemovedDeployRecordsIDs() (ids []int) {
+	for id := range m.removeddeploy_records {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DeployRecordsIDs returns the "deploy_records" edge IDs in the mutation.
+func (m *CompileRecordMutation) DeployRecordsIDs() (ids []int) {
+	for id := range m.deploy_records {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDeployRecords resets all changes to the "deploy_records" edge.
+func (m *CompileRecordMutation) ResetDeployRecords() {
+	m.deploy_records = nil
+	m.cleareddeploy_records = false
+	m.removeddeploy_records = nil
+}
+
 // Where appends a list predicates to the CompileRecordMutation builder.
 func (m *CompileRecordMutation) Where(ps ...predicate.CompileRecord) {
 	m.predicates = append(m.predicates, ps...)
@@ -732,12 +791,15 @@ func (m *CompileRecordMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *CompileRecordMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.operator != nil {
 		edges = append(edges, compilerecord.EdgeOperator)
 	}
 	if m.project != nil {
 		edges = append(edges, compilerecord.EdgeProject)
+	}
+	if m.deploy_records != nil {
+		edges = append(edges, compilerecord.EdgeDeployRecords)
 	}
 	return edges
 }
@@ -758,18 +820,27 @@ func (m *CompileRecordMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case compilerecord.EdgeDeployRecords:
+		ids := make([]ent.Value, 0, len(m.deploy_records))
+		for id := range m.deploy_records {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *CompileRecordMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedoperator != nil {
 		edges = append(edges, compilerecord.EdgeOperator)
 	}
 	if m.removedproject != nil {
 		edges = append(edges, compilerecord.EdgeProject)
+	}
+	if m.removeddeploy_records != nil {
+		edges = append(edges, compilerecord.EdgeDeployRecords)
 	}
 	return edges
 }
@@ -790,18 +861,27 @@ func (m *CompileRecordMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case compilerecord.EdgeDeployRecords:
+		ids := make([]ent.Value, 0, len(m.removeddeploy_records))
+		for id := range m.removeddeploy_records {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *CompileRecordMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedoperator {
 		edges = append(edges, compilerecord.EdgeOperator)
 	}
 	if m.clearedproject {
 		edges = append(edges, compilerecord.EdgeProject)
+	}
+	if m.cleareddeploy_records {
+		edges = append(edges, compilerecord.EdgeDeployRecords)
 	}
 	return edges
 }
@@ -814,6 +894,8 @@ func (m *CompileRecordMutation) EdgeCleared(name string) bool {
 		return m.clearedoperator
 	case compilerecord.EdgeProject:
 		return m.clearedproject
+	case compilerecord.EdgeDeployRecords:
+		return m.cleareddeploy_records
 	}
 	return false
 }
@@ -836,8 +918,711 @@ func (m *CompileRecordMutation) ResetEdge(name string) error {
 	case compilerecord.EdgeProject:
 		m.ResetProject()
 		return nil
+	case compilerecord.EdgeDeployRecords:
+		m.ResetDeployRecords()
+		return nil
 	}
 	return fmt.Errorf("unknown CompileRecord edge %s", name)
+}
+
+// DeployRecordMutation represents an operation that mutates the DeployRecord nodes in the graph.
+type DeployRecordMutation struct {
+	config
+	op                    Op
+	typ                   string
+	id                    *int
+	image                 *string
+	created_at            *time.Time
+	status_code           *int
+	addstatus_code        *int
+	container_hash        *string
+	clearedFields         map[string]struct{}
+	operator              map[int]struct{}
+	removedoperator       map[int]struct{}
+	clearedoperator       bool
+	compile_record        map[int]struct{}
+	removedcompile_record map[int]struct{}
+	clearedcompile_record bool
+	done                  bool
+	oldValue              func(context.Context) (*DeployRecord, error)
+	predicates            []predicate.DeployRecord
+}
+
+var _ ent.Mutation = (*DeployRecordMutation)(nil)
+
+// deployrecordOption allows management of the mutation configuration using functional options.
+type deployrecordOption func(*DeployRecordMutation)
+
+// newDeployRecordMutation creates new mutation for the DeployRecord entity.
+func newDeployRecordMutation(c config, op Op, opts ...deployrecordOption) *DeployRecordMutation {
+	m := &DeployRecordMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDeployRecord,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDeployRecordID sets the ID field of the mutation.
+func withDeployRecordID(id int) deployrecordOption {
+	return func(m *DeployRecordMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DeployRecord
+		)
+		m.oldValue = func(ctx context.Context) (*DeployRecord, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DeployRecord.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDeployRecord sets the old DeployRecord of the mutation.
+func withDeployRecord(node *DeployRecord) deployrecordOption {
+	return func(m *DeployRecordMutation) {
+		m.oldValue = func(context.Context) (*DeployRecord, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DeployRecordMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DeployRecordMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DeployRecordMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DeployRecordMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().DeployRecord.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetImage sets the "image" field.
+func (m *DeployRecordMutation) SetImage(s string) {
+	m.image = &s
+}
+
+// Image returns the value of the "image" field in the mutation.
+func (m *DeployRecordMutation) Image() (r string, exists bool) {
+	v := m.image
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldImage returns the old "image" field's value of the DeployRecord entity.
+// If the DeployRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeployRecordMutation) OldImage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldImage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldImage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldImage: %w", err)
+	}
+	return oldValue.Image, nil
+}
+
+// ResetImage resets all changes to the "image" field.
+func (m *DeployRecordMutation) ResetImage() {
+	m.image = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *DeployRecordMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *DeployRecordMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the DeployRecord entity.
+// If the DeployRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeployRecordMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *DeployRecordMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetStatusCode sets the "status_code" field.
+func (m *DeployRecordMutation) SetStatusCode(i int) {
+	m.status_code = &i
+	m.addstatus_code = nil
+}
+
+// StatusCode returns the value of the "status_code" field in the mutation.
+func (m *DeployRecordMutation) StatusCode() (r int, exists bool) {
+	v := m.status_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatusCode returns the old "status_code" field's value of the DeployRecord entity.
+// If the DeployRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeployRecordMutation) OldStatusCode(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatusCode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatusCode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatusCode: %w", err)
+	}
+	return oldValue.StatusCode, nil
+}
+
+// AddStatusCode adds i to the "status_code" field.
+func (m *DeployRecordMutation) AddStatusCode(i int) {
+	if m.addstatus_code != nil {
+		*m.addstatus_code += i
+	} else {
+		m.addstatus_code = &i
+	}
+}
+
+// AddedStatusCode returns the value that was added to the "status_code" field in this mutation.
+func (m *DeployRecordMutation) AddedStatusCode() (r int, exists bool) {
+	v := m.addstatus_code
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetStatusCode resets all changes to the "status_code" field.
+func (m *DeployRecordMutation) ResetStatusCode() {
+	m.status_code = nil
+	m.addstatus_code = nil
+}
+
+// SetContainerHash sets the "container_hash" field.
+func (m *DeployRecordMutation) SetContainerHash(s string) {
+	m.container_hash = &s
+}
+
+// ContainerHash returns the value of the "container_hash" field in the mutation.
+func (m *DeployRecordMutation) ContainerHash() (r string, exists bool) {
+	v := m.container_hash
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContainerHash returns the old "container_hash" field's value of the DeployRecord entity.
+// If the DeployRecord object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DeployRecordMutation) OldContainerHash(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContainerHash is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContainerHash requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContainerHash: %w", err)
+	}
+	return oldValue.ContainerHash, nil
+}
+
+// ResetContainerHash resets all changes to the "container_hash" field.
+func (m *DeployRecordMutation) ResetContainerHash() {
+	m.container_hash = nil
+}
+
+// AddOperatorIDs adds the "operator" edge to the User entity by ids.
+func (m *DeployRecordMutation) AddOperatorIDs(ids ...int) {
+	if m.operator == nil {
+		m.operator = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.operator[ids[i]] = struct{}{}
+	}
+}
+
+// ClearOperator clears the "operator" edge to the User entity.
+func (m *DeployRecordMutation) ClearOperator() {
+	m.clearedoperator = true
+}
+
+// OperatorCleared reports if the "operator" edge to the User entity was cleared.
+func (m *DeployRecordMutation) OperatorCleared() bool {
+	return m.clearedoperator
+}
+
+// RemoveOperatorIDs removes the "operator" edge to the User entity by IDs.
+func (m *DeployRecordMutation) RemoveOperatorIDs(ids ...int) {
+	if m.removedoperator == nil {
+		m.removedoperator = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.operator, ids[i])
+		m.removedoperator[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedOperator returns the removed IDs of the "operator" edge to the User entity.
+func (m *DeployRecordMutation) RemovedOperatorIDs() (ids []int) {
+	for id := range m.removedoperator {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// OperatorIDs returns the "operator" edge IDs in the mutation.
+func (m *DeployRecordMutation) OperatorIDs() (ids []int) {
+	for id := range m.operator {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetOperator resets all changes to the "operator" edge.
+func (m *DeployRecordMutation) ResetOperator() {
+	m.operator = nil
+	m.clearedoperator = false
+	m.removedoperator = nil
+}
+
+// AddCompileRecordIDs adds the "compile_record" edge to the CompileRecord entity by ids.
+func (m *DeployRecordMutation) AddCompileRecordIDs(ids ...int) {
+	if m.compile_record == nil {
+		m.compile_record = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.compile_record[ids[i]] = struct{}{}
+	}
+}
+
+// ClearCompileRecord clears the "compile_record" edge to the CompileRecord entity.
+func (m *DeployRecordMutation) ClearCompileRecord() {
+	m.clearedcompile_record = true
+}
+
+// CompileRecordCleared reports if the "compile_record" edge to the CompileRecord entity was cleared.
+func (m *DeployRecordMutation) CompileRecordCleared() bool {
+	return m.clearedcompile_record
+}
+
+// RemoveCompileRecordIDs removes the "compile_record" edge to the CompileRecord entity by IDs.
+func (m *DeployRecordMutation) RemoveCompileRecordIDs(ids ...int) {
+	if m.removedcompile_record == nil {
+		m.removedcompile_record = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.compile_record, ids[i])
+		m.removedcompile_record[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedCompileRecord returns the removed IDs of the "compile_record" edge to the CompileRecord entity.
+func (m *DeployRecordMutation) RemovedCompileRecordIDs() (ids []int) {
+	for id := range m.removedcompile_record {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// CompileRecordIDs returns the "compile_record" edge IDs in the mutation.
+func (m *DeployRecordMutation) CompileRecordIDs() (ids []int) {
+	for id := range m.compile_record {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetCompileRecord resets all changes to the "compile_record" edge.
+func (m *DeployRecordMutation) ResetCompileRecord() {
+	m.compile_record = nil
+	m.clearedcompile_record = false
+	m.removedcompile_record = nil
+}
+
+// Where appends a list predicates to the DeployRecordMutation builder.
+func (m *DeployRecordMutation) Where(ps ...predicate.DeployRecord) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DeployRecordMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DeployRecordMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DeployRecord, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DeployRecordMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DeployRecordMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (DeployRecord).
+func (m *DeployRecordMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DeployRecordMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.image != nil {
+		fields = append(fields, deployrecord.FieldImage)
+	}
+	if m.created_at != nil {
+		fields = append(fields, deployrecord.FieldCreatedAt)
+	}
+	if m.status_code != nil {
+		fields = append(fields, deployrecord.FieldStatusCode)
+	}
+	if m.container_hash != nil {
+		fields = append(fields, deployrecord.FieldContainerHash)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DeployRecordMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case deployrecord.FieldImage:
+		return m.Image()
+	case deployrecord.FieldCreatedAt:
+		return m.CreatedAt()
+	case deployrecord.FieldStatusCode:
+		return m.StatusCode()
+	case deployrecord.FieldContainerHash:
+		return m.ContainerHash()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DeployRecordMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case deployrecord.FieldImage:
+		return m.OldImage(ctx)
+	case deployrecord.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case deployrecord.FieldStatusCode:
+		return m.OldStatusCode(ctx)
+	case deployrecord.FieldContainerHash:
+		return m.OldContainerHash(ctx)
+	}
+	return nil, fmt.Errorf("unknown DeployRecord field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DeployRecordMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case deployrecord.FieldImage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetImage(v)
+		return nil
+	case deployrecord.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case deployrecord.FieldStatusCode:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatusCode(v)
+		return nil
+	case deployrecord.FieldContainerHash:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContainerHash(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DeployRecord field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DeployRecordMutation) AddedFields() []string {
+	var fields []string
+	if m.addstatus_code != nil {
+		fields = append(fields, deployrecord.FieldStatusCode)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DeployRecordMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case deployrecord.FieldStatusCode:
+		return m.AddedStatusCode()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DeployRecordMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case deployrecord.FieldStatusCode:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddStatusCode(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DeployRecord numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DeployRecordMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DeployRecordMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DeployRecordMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown DeployRecord nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DeployRecordMutation) ResetField(name string) error {
+	switch name {
+	case deployrecord.FieldImage:
+		m.ResetImage()
+		return nil
+	case deployrecord.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case deployrecord.FieldStatusCode:
+		m.ResetStatusCode()
+		return nil
+	case deployrecord.FieldContainerHash:
+		m.ResetContainerHash()
+		return nil
+	}
+	return fmt.Errorf("unknown DeployRecord field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DeployRecordMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.operator != nil {
+		edges = append(edges, deployrecord.EdgeOperator)
+	}
+	if m.compile_record != nil {
+		edges = append(edges, deployrecord.EdgeCompileRecord)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DeployRecordMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case deployrecord.EdgeOperator:
+		ids := make([]ent.Value, 0, len(m.operator))
+		for id := range m.operator {
+			ids = append(ids, id)
+		}
+		return ids
+	case deployrecord.EdgeCompileRecord:
+		ids := make([]ent.Value, 0, len(m.compile_record))
+		for id := range m.compile_record {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DeployRecordMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedoperator != nil {
+		edges = append(edges, deployrecord.EdgeOperator)
+	}
+	if m.removedcompile_record != nil {
+		edges = append(edges, deployrecord.EdgeCompileRecord)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DeployRecordMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case deployrecord.EdgeOperator:
+		ids := make([]ent.Value, 0, len(m.removedoperator))
+		for id := range m.removedoperator {
+			ids = append(ids, id)
+		}
+		return ids
+	case deployrecord.EdgeCompileRecord:
+		ids := make([]ent.Value, 0, len(m.removedcompile_record))
+		for id := range m.removedcompile_record {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DeployRecordMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedoperator {
+		edges = append(edges, deployrecord.EdgeOperator)
+	}
+	if m.clearedcompile_record {
+		edges = append(edges, deployrecord.EdgeCompileRecord)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DeployRecordMutation) EdgeCleared(name string) bool {
+	switch name {
+	case deployrecord.EdgeOperator:
+		return m.clearedoperator
+	case deployrecord.EdgeCompileRecord:
+		return m.clearedcompile_record
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DeployRecordMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown DeployRecord unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DeployRecordMutation) ResetEdge(name string) error {
+	switch name {
+	case deployrecord.EdgeOperator:
+		m.ResetOperator()
+		return nil
+	case deployrecord.EdgeCompileRecord:
+		m.ResetCompileRecord()
+		return nil
+	}
+	return fmt.Errorf("unknown DeployRecord edge %s", name)
 }
 
 // ProjectMutation represents an operation that mutates the Project nodes in the graph.
@@ -1575,6 +2360,9 @@ type UserMutation struct {
 	compile_records        map[int]struct{}
 	removedcompile_records map[int]struct{}
 	clearedcompile_records bool
+	deploy_records         map[int]struct{}
+	removeddeploy_records  map[int]struct{}
+	cleareddeploy_records  bool
 	done                   bool
 	oldValue               func(context.Context) (*User, error)
 	predicates             []predicate.User
@@ -1930,6 +2718,60 @@ func (m *UserMutation) ResetCompileRecords() {
 	m.removedcompile_records = nil
 }
 
+// AddDeployRecordIDs adds the "deploy_records" edge to the DeployRecord entity by ids.
+func (m *UserMutation) AddDeployRecordIDs(ids ...int) {
+	if m.deploy_records == nil {
+		m.deploy_records = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.deploy_records[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDeployRecords clears the "deploy_records" edge to the DeployRecord entity.
+func (m *UserMutation) ClearDeployRecords() {
+	m.cleareddeploy_records = true
+}
+
+// DeployRecordsCleared reports if the "deploy_records" edge to the DeployRecord entity was cleared.
+func (m *UserMutation) DeployRecordsCleared() bool {
+	return m.cleareddeploy_records
+}
+
+// RemoveDeployRecordIDs removes the "deploy_records" edge to the DeployRecord entity by IDs.
+func (m *UserMutation) RemoveDeployRecordIDs(ids ...int) {
+	if m.removeddeploy_records == nil {
+		m.removeddeploy_records = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.deploy_records, ids[i])
+		m.removeddeploy_records[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDeployRecords returns the removed IDs of the "deploy_records" edge to the DeployRecord entity.
+func (m *UserMutation) RemovedDeployRecordsIDs() (ids []int) {
+	for id := range m.removeddeploy_records {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DeployRecordsIDs returns the "deploy_records" edge IDs in the mutation.
+func (m *UserMutation) DeployRecordsIDs() (ids []int) {
+	for id := range m.deploy_records {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDeployRecords resets all changes to the "deploy_records" edge.
+func (m *UserMutation) ResetDeployRecords() {
+	m.deploy_records = nil
+	m.cleareddeploy_records = false
+	m.removeddeploy_records = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -2114,12 +2956,15 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.projects != nil {
 		edges = append(edges, user.EdgeProjects)
 	}
 	if m.compile_records != nil {
 		edges = append(edges, user.EdgeCompileRecords)
+	}
+	if m.deploy_records != nil {
+		edges = append(edges, user.EdgeDeployRecords)
 	}
 	return edges
 }
@@ -2140,18 +2985,27 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeDeployRecords:
+		ids := make([]ent.Value, 0, len(m.deploy_records))
+		for id := range m.deploy_records {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedprojects != nil {
 		edges = append(edges, user.EdgeProjects)
 	}
 	if m.removedcompile_records != nil {
 		edges = append(edges, user.EdgeCompileRecords)
+	}
+	if m.removeddeploy_records != nil {
+		edges = append(edges, user.EdgeDeployRecords)
 	}
 	return edges
 }
@@ -2172,18 +3026,27 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeDeployRecords:
+		ids := make([]ent.Value, 0, len(m.removeddeploy_records))
+		for id := range m.removeddeploy_records {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedprojects {
 		edges = append(edges, user.EdgeProjects)
 	}
 	if m.clearedcompile_records {
 		edges = append(edges, user.EdgeCompileRecords)
+	}
+	if m.cleareddeploy_records {
+		edges = append(edges, user.EdgeDeployRecords)
 	}
 	return edges
 }
@@ -2196,6 +3059,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedprojects
 	case user.EdgeCompileRecords:
 		return m.clearedcompile_records
+	case user.EdgeDeployRecords:
+		return m.cleareddeploy_records
 	}
 	return false
 }
@@ -2217,6 +3082,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeCompileRecords:
 		m.ResetCompileRecords()
+		return nil
+	case user.EdgeDeployRecords:
+		m.ResetDeployRecords()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

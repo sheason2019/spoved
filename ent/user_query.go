@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/sheason2019/spoved/ent/compilerecord"
+	"github.com/sheason2019/spoved/ent/deployrecord"
 	"github.com/sheason2019/spoved/ent/predicate"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
@@ -26,6 +27,7 @@ type UserQuery struct {
 	predicates         []predicate.User
 	withProjects       *ProjectQuery
 	withCompileRecords *CompileRecordQuery
+	withDeployRecords  *DeployRecordQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -99,6 +101,28 @@ func (uq *UserQuery) QueryCompileRecords() *CompileRecordQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(compilerecord.Table, compilerecord.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, user.CompileRecordsTable, user.CompileRecordsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDeployRecords chains the current query on the "deploy_records" edge.
+func (uq *UserQuery) QueryDeployRecords() *DeployRecordQuery {
+	query := (&DeployRecordClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(deployrecord.Table, deployrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.DeployRecordsTable, user.DeployRecordsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -298,6 +322,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		predicates:         append([]predicate.User{}, uq.predicates...),
 		withProjects:       uq.withProjects.Clone(),
 		withCompileRecords: uq.withCompileRecords.Clone(),
+		withDeployRecords:  uq.withDeployRecords.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -323,6 +348,17 @@ func (uq *UserQuery) WithCompileRecords(opts ...func(*CompileRecordQuery)) *User
 		opt(query)
 	}
 	uq.withCompileRecords = query
+	return uq
+}
+
+// WithDeployRecords tells the query-builder to eager-load the nodes that are connected to
+// the "deploy_records" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithDeployRecords(opts ...func(*DeployRecordQuery)) *UserQuery {
+	query := (&DeployRecordClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withDeployRecords = query
 	return uq
 }
 
@@ -404,9 +440,10 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			uq.withProjects != nil,
 			uq.withCompileRecords != nil,
+			uq.withDeployRecords != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -438,6 +475,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadCompileRecords(ctx, query, nodes,
 			func(n *User) { n.Edges.CompileRecords = []*CompileRecord{} },
 			func(n *User, e *CompileRecord) { n.Edges.CompileRecords = append(n.Edges.CompileRecords, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withDeployRecords; query != nil {
+		if err := uq.loadDeployRecords(ctx, query, nodes,
+			func(n *User) { n.Edges.DeployRecords = []*DeployRecord{} },
+			func(n *User, e *DeployRecord) { n.Edges.DeployRecords = append(n.Edges.DeployRecords, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -553,6 +597,64 @@ func (uq *UserQuery) loadCompileRecords(ctx context.Context, query *CompileRecor
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "compile_records" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (uq *UserQuery) loadDeployRecords(ctx context.Context, query *DeployRecordQuery, nodes []*User, init func(*User), assign func(*User, *DeployRecord)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*User)
+	nids := make(map[int]map[*User]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(user.DeployRecordsTable)
+		s.Join(joinT).On(s.C(deployrecord.FieldID), joinT.C(user.DeployRecordsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(user.DeployRecordsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(user.DeployRecordsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(sql.NullInt64)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := int(values[0].(*sql.NullInt64).Int64)
+			inValue := int(values[1].(*sql.NullInt64).Int64)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "deploy_records" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

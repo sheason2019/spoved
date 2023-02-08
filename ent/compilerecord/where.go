@@ -479,6 +479,33 @@ func HasProjectWith(preds ...predicate.Project) predicate.CompileRecord {
 	})
 }
 
+// HasDeployRecords applies the HasEdge predicate on the "deploy_records" edge.
+func HasDeployRecords() predicate.CompileRecord {
+	return predicate.CompileRecord(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, DeployRecordsTable, DeployRecordsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDeployRecordsWith applies the HasEdge predicate on the "deploy_records" edge with a given conditions (other predicates).
+func HasDeployRecordsWith(preds ...predicate.DeployRecord) predicate.CompileRecord {
+	return predicate.CompileRecord(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(DeployRecordsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, DeployRecordsTable, DeployRecordsPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.CompileRecord) predicate.CompileRecord {
 	return predicate.CompileRecord(func(s *sql.Selector) {

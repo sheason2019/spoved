@@ -28,11 +28,13 @@ type config struct {
 type (
 	hooks struct {
 		CompileRecord []ent.Hook
+		DeployRecord  []ent.Hook
 		Project       []ent.Hook
 		User          []ent.Hook
 	}
 	inters struct {
 		CompileRecord []ent.Interceptor
+		DeployRecord  []ent.Interceptor
 		Project       []ent.Interceptor
 		User          []ent.Interceptor
 	}

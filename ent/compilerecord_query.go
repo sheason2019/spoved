@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/sheason2019/spoved/ent/compilerecord"
+	"github.com/sheason2019/spoved/ent/deployrecord"
 	"github.com/sheason2019/spoved/ent/predicate"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
@@ -20,12 +21,13 @@ import (
 // CompileRecordQuery is the builder for querying CompileRecord entities.
 type CompileRecordQuery struct {
 	config
-	ctx          *QueryContext
-	order        []OrderFunc
-	inters       []Interceptor
-	predicates   []predicate.CompileRecord
-	withOperator *UserQuery
-	withProject  *ProjectQuery
+	ctx               *QueryContext
+	order             []OrderFunc
+	inters            []Interceptor
+	predicates        []predicate.CompileRecord
+	withOperator      *UserQuery
+	withProject       *ProjectQuery
+	withDeployRecords *DeployRecordQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -99,6 +101,28 @@ func (crq *CompileRecordQuery) QueryProject() *ProjectQuery {
 			sqlgraph.From(compilerecord.Table, compilerecord.FieldID, selector),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, compilerecord.ProjectTable, compilerecord.ProjectPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(crq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDeployRecords chains the current query on the "deploy_records" edge.
+func (crq *CompileRecordQuery) QueryDeployRecords() *DeployRecordQuery {
+	query := (&DeployRecordClient{config: crq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := crq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := crq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(compilerecord.Table, compilerecord.FieldID, selector),
+			sqlgraph.To(deployrecord.Table, deployrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, compilerecord.DeployRecordsTable, compilerecord.DeployRecordsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(crq.driver.Dialect(), step)
 		return fromU, nil
@@ -291,13 +315,14 @@ func (crq *CompileRecordQuery) Clone() *CompileRecordQuery {
 		return nil
 	}
 	return &CompileRecordQuery{
-		config:       crq.config,
-		ctx:          crq.ctx.Clone(),
-		order:        append([]OrderFunc{}, crq.order...),
-		inters:       append([]Interceptor{}, crq.inters...),
-		predicates:   append([]predicate.CompileRecord{}, crq.predicates...),
-		withOperator: crq.withOperator.Clone(),
-		withProject:  crq.withProject.Clone(),
+		config:            crq.config,
+		ctx:               crq.ctx.Clone(),
+		order:             append([]OrderFunc{}, crq.order...),
+		inters:            append([]Interceptor{}, crq.inters...),
+		predicates:        append([]predicate.CompileRecord{}, crq.predicates...),
+		withOperator:      crq.withOperator.Clone(),
+		withProject:       crq.withProject.Clone(),
+		withDeployRecords: crq.withDeployRecords.Clone(),
 		// clone intermediate query.
 		sql:  crq.sql.Clone(),
 		path: crq.path,
@@ -323,6 +348,17 @@ func (crq *CompileRecordQuery) WithProject(opts ...func(*ProjectQuery)) *Compile
 		opt(query)
 	}
 	crq.withProject = query
+	return crq
+}
+
+// WithDeployRecords tells the query-builder to eager-load the nodes that are connected to
+// the "deploy_records" edge. The optional arguments are used to configure the query builder of the edge.
+func (crq *CompileRecordQuery) WithDeployRecords(opts ...func(*DeployRecordQuery)) *CompileRecordQuery {
+	query := (&DeployRecordClient{config: crq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	crq.withDeployRecords = query
 	return crq
 }
 
@@ -404,9 +440,10 @@ func (crq *CompileRecordQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	var (
 		nodes       = []*CompileRecord{}
 		_spec       = crq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			crq.withOperator != nil,
 			crq.withProject != nil,
+			crq.withDeployRecords != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -438,6 +475,13 @@ func (crq *CompileRecordQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 		if err := crq.loadProject(ctx, query, nodes,
 			func(n *CompileRecord) { n.Edges.Project = []*Project{} },
 			func(n *CompileRecord, e *Project) { n.Edges.Project = append(n.Edges.Project, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := crq.withDeployRecords; query != nil {
+		if err := crq.loadDeployRecords(ctx, query, nodes,
+			func(n *CompileRecord) { n.Edges.DeployRecords = []*DeployRecord{} },
+			func(n *CompileRecord, e *DeployRecord) { n.Edges.DeployRecords = append(n.Edges.DeployRecords, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -553,6 +597,64 @@ func (crq *CompileRecordQuery) loadProject(ctx context.Context, query *ProjectQu
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "project" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (crq *CompileRecordQuery) loadDeployRecords(ctx context.Context, query *DeployRecordQuery, nodes []*CompileRecord, init func(*CompileRecord), assign func(*CompileRecord, *DeployRecord)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*CompileRecord)
+	nids := make(map[int]map[*CompileRecord]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(compilerecord.DeployRecordsTable)
+		s.Join(joinT).On(s.C(deployrecord.FieldID), joinT.C(compilerecord.DeployRecordsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(compilerecord.DeployRecordsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(compilerecord.DeployRecordsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(sql.NullInt64)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := int(values[0].(*sql.NullInt64).Int64)
+			inValue := int(values[1].(*sql.NullInt64).Int64)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*CompileRecord]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "deploy_records" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

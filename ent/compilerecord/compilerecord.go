@@ -23,6 +23,8 @@ const (
 	EdgeOperator = "operator"
 	// EdgeProject holds the string denoting the project edge name in mutations.
 	EdgeProject = "project"
+	// EdgeDeployRecords holds the string denoting the deploy_records edge name in mutations.
+	EdgeDeployRecords = "deploy_records"
 	// Table holds the table name of the compilerecord in the database.
 	Table = "compile_records"
 	// OperatorTable is the table that holds the operator relation/edge. The primary key declared below.
@@ -35,6 +37,11 @@ const (
 	// ProjectInverseTable is the table name for the Project entity.
 	// It exists in this package in order to avoid circular dependency with the "project" package.
 	ProjectInverseTable = "projects"
+	// DeployRecordsTable is the table that holds the deploy_records relation/edge. The primary key declared below.
+	DeployRecordsTable = "compile_record_deploy_records"
+	// DeployRecordsInverseTable is the table name for the DeployRecord entity.
+	// It exists in this package in order to avoid circular dependency with the "deployrecord" package.
+	DeployRecordsInverseTable = "deploy_records"
 )
 
 // Columns holds all SQL columns for compilerecord fields.
@@ -55,6 +62,9 @@ var (
 	// ProjectPrimaryKey and ProjectColumn2 are the table columns denoting the
 	// primary key for the project relation (M2M).
 	ProjectPrimaryKey = []string{"project_id", "compile_record_id"}
+	// DeployRecordsPrimaryKey and DeployRecordsColumn2 are the table columns denoting the
+	// primary key for the deploy_records relation (M2M).
+	DeployRecordsPrimaryKey = []string{"compile_record_id", "deploy_record_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

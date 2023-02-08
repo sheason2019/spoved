@@ -9,6 +9,9 @@ import (
 // CompileRecord is the predicate function for compilerecord builders.
 type CompileRecord func(*sql.Selector)
 
+// DeployRecord is the predicate function for deployrecord builders.
+type DeployRecord func(*sql.Selector)
+
 // Project is the predicate function for project builders.
 type Project func(*sql.Selector)
 

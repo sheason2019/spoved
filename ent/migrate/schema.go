@@ -24,6 +24,20 @@ var (
 		Columns:    CompileRecordsColumns,
 		PrimaryKey: []*schema.Column{CompileRecordsColumns[0]},
 	}
+	// DeployRecordsColumns holds the columns for the "deploy_records" table.
+	DeployRecordsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "image", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "status_code", Type: field.TypeInt},
+		{Name: "container_hash", Type: field.TypeString},
+	}
+	// DeployRecordsTable holds the schema information for the "deploy_records" table.
+	DeployRecordsTable = &schema.Table{
+		Name:       "deploy_records",
+		Columns:    DeployRecordsColumns,
+		PrimaryKey: []*schema.Column{DeployRecordsColumns[0]},
+	}
 	// ProjectsColumns holds the columns for the "projects" table.
 	ProjectsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -64,6 +78,31 @@ var (
 				Name:    "user_username",
 				Unique:  true,
 				Columns: []*schema.Column{UsersColumns[1]},
+			},
+		},
+	}
+	// CompileRecordDeployRecordsColumns holds the columns for the "compile_record_deploy_records" table.
+	CompileRecordDeployRecordsColumns = []*schema.Column{
+		{Name: "compile_record_id", Type: field.TypeInt},
+		{Name: "deploy_record_id", Type: field.TypeInt},
+	}
+	// CompileRecordDeployRecordsTable holds the schema information for the "compile_record_deploy_records" table.
+	CompileRecordDeployRecordsTable = &schema.Table{
+		Name:       "compile_record_deploy_records",
+		Columns:    CompileRecordDeployRecordsColumns,
+		PrimaryKey: []*schema.Column{CompileRecordDeployRecordsColumns[0], CompileRecordDeployRecordsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "compile_record_deploy_records_compile_record_id",
+				Columns:    []*schema.Column{CompileRecordDeployRecordsColumns[0]},
+				RefColumns: []*schema.Column{CompileRecordsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "compile_record_deploy_records_deploy_record_id",
+				Columns:    []*schema.Column{CompileRecordDeployRecordsColumns[1]},
+				RefColumns: []*schema.Column{DeployRecordsColumns[0]},
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -142,22 +181,54 @@ var (
 			},
 		},
 	}
+	// UserDeployRecordsColumns holds the columns for the "user_deploy_records" table.
+	UserDeployRecordsColumns = []*schema.Column{
+		{Name: "user_id", Type: field.TypeInt},
+		{Name: "deploy_record_id", Type: field.TypeInt},
+	}
+	// UserDeployRecordsTable holds the schema information for the "user_deploy_records" table.
+	UserDeployRecordsTable = &schema.Table{
+		Name:       "user_deploy_records",
+		Columns:    UserDeployRecordsColumns,
+		PrimaryKey: []*schema.Column{UserDeployRecordsColumns[0], UserDeployRecordsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_deploy_records_user_id",
+				Columns:    []*schema.Column{UserDeployRecordsColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "user_deploy_records_deploy_record_id",
+				Columns:    []*schema.Column{UserDeployRecordsColumns[1]},
+				RefColumns: []*schema.Column{DeployRecordsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CompileRecordsTable,
+		DeployRecordsTable,
 		ProjectsTable,
 		UsersTable,
+		CompileRecordDeployRecordsTable,
 		ProjectCompileRecordsTable,
 		UserProjectsTable,
 		UserCompileRecordsTable,
+		UserDeployRecordsTable,
 	}
 )
 
 func init() {
+	CompileRecordDeployRecordsTable.ForeignKeys[0].RefTable = CompileRecordsTable
+	CompileRecordDeployRecordsTable.ForeignKeys[1].RefTable = DeployRecordsTable
 	ProjectCompileRecordsTable.ForeignKeys[0].RefTable = ProjectsTable
 	ProjectCompileRecordsTable.ForeignKeys[1].RefTable = CompileRecordsTable
 	UserProjectsTable.ForeignKeys[0].RefTable = UsersTable
 	UserProjectsTable.ForeignKeys[1].RefTable = ProjectsTable
 	UserCompileRecordsTable.ForeignKeys[0].RefTable = UsersTable
 	UserCompileRecordsTable.ForeignKeys[1].RefTable = CompileRecordsTable
+	UserDeployRecordsTable.ForeignKeys[0].RefTable = UsersTable
+	UserDeployRecordsTable.ForeignKeys[1].RefTable = DeployRecordsTable
 }

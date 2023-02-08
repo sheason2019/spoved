@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/sheason2019/spoved/ent/compilerecord"
+	"github.com/sheason2019/spoved/ent/deployrecord"
 	"github.com/sheason2019/spoved/ent/predicate"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
@@ -103,6 +104,21 @@ func (cru *CompileRecordUpdate) AddProject(p ...*Project) *CompileRecordUpdate {
 	return cru.AddProjectIDs(ids...)
 }
 
+// AddDeployRecordIDs adds the "deploy_records" edge to the DeployRecord entity by IDs.
+func (cru *CompileRecordUpdate) AddDeployRecordIDs(ids ...int) *CompileRecordUpdate {
+	cru.mutation.AddDeployRecordIDs(ids...)
+	return cru
+}
+
+// AddDeployRecords adds the "deploy_records" edges to the DeployRecord entity.
+func (cru *CompileRecordUpdate) AddDeployRecords(d ...*DeployRecord) *CompileRecordUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return cru.AddDeployRecordIDs(ids...)
+}
+
 // Mutation returns the CompileRecordMutation object of the builder.
 func (cru *CompileRecordUpdate) Mutation() *CompileRecordMutation {
 	return cru.mutation
@@ -148,6 +164,27 @@ func (cru *CompileRecordUpdate) RemoveProject(p ...*Project) *CompileRecordUpdat
 		ids[i] = p[i].ID
 	}
 	return cru.RemoveProjectIDs(ids...)
+}
+
+// ClearDeployRecords clears all "deploy_records" edges to the DeployRecord entity.
+func (cru *CompileRecordUpdate) ClearDeployRecords() *CompileRecordUpdate {
+	cru.mutation.ClearDeployRecords()
+	return cru
+}
+
+// RemoveDeployRecordIDs removes the "deploy_records" edge to DeployRecord entities by IDs.
+func (cru *CompileRecordUpdate) RemoveDeployRecordIDs(ids ...int) *CompileRecordUpdate {
+	cru.mutation.RemoveDeployRecordIDs(ids...)
+	return cru
+}
+
+// RemoveDeployRecords removes "deploy_records" edges to DeployRecord entities.
+func (cru *CompileRecordUpdate) RemoveDeployRecords(d ...*DeployRecord) *CompileRecordUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return cru.RemoveDeployRecordIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -324,6 +361,60 @@ func (cru *CompileRecordUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if cru.mutation.DeployRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   compilerecord.DeployRecordsTable,
+			Columns: compilerecord.DeployRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: deployrecord.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cru.mutation.RemovedDeployRecordsIDs(); len(nodes) > 0 && !cru.mutation.DeployRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   compilerecord.DeployRecordsTable,
+			Columns: compilerecord.DeployRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: deployrecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cru.mutation.DeployRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   compilerecord.DeployRecordsTable,
+			Columns: compilerecord.DeployRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: deployrecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{compilerecord.Label}
@@ -417,6 +508,21 @@ func (cruo *CompileRecordUpdateOne) AddProject(p ...*Project) *CompileRecordUpda
 	return cruo.AddProjectIDs(ids...)
 }
 
+// AddDeployRecordIDs adds the "deploy_records" edge to the DeployRecord entity by IDs.
+func (cruo *CompileRecordUpdateOne) AddDeployRecordIDs(ids ...int) *CompileRecordUpdateOne {
+	cruo.mutation.AddDeployRecordIDs(ids...)
+	return cruo
+}
+
+// AddDeployRecords adds the "deploy_records" edges to the DeployRecord entity.
+func (cruo *CompileRecordUpdateOne) AddDeployRecords(d ...*DeployRecord) *CompileRecordUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return cruo.AddDeployRecordIDs(ids...)
+}
+
 // Mutation returns the CompileRecordMutation object of the builder.
 func (cruo *CompileRecordUpdateOne) Mutation() *CompileRecordMutation {
 	return cruo.mutation
@@ -462,6 +568,27 @@ func (cruo *CompileRecordUpdateOne) RemoveProject(p ...*Project) *CompileRecordU
 		ids[i] = p[i].ID
 	}
 	return cruo.RemoveProjectIDs(ids...)
+}
+
+// ClearDeployRecords clears all "deploy_records" edges to the DeployRecord entity.
+func (cruo *CompileRecordUpdateOne) ClearDeployRecords() *CompileRecordUpdateOne {
+	cruo.mutation.ClearDeployRecords()
+	return cruo
+}
+
+// RemoveDeployRecordIDs removes the "deploy_records" edge to DeployRecord entities by IDs.
+func (cruo *CompileRecordUpdateOne) RemoveDeployRecordIDs(ids ...int) *CompileRecordUpdateOne {
+	cruo.mutation.RemoveDeployRecordIDs(ids...)
+	return cruo
+}
+
+// RemoveDeployRecords removes "deploy_records" edges to DeployRecord entities.
+func (cruo *CompileRecordUpdateOne) RemoveDeployRecords(d ...*DeployRecord) *CompileRecordUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return cruo.RemoveDeployRecordIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -654,6 +781,60 @@ func (cruo *CompileRecordUpdateOne) sqlSave(ctx context.Context) (_node *Compile
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cruo.mutation.DeployRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   compilerecord.DeployRecordsTable,
+			Columns: compilerecord.DeployRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: deployrecord.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cruo.mutation.RemovedDeployRecordsIDs(); len(nodes) > 0 && !cruo.mutation.DeployRecordsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   compilerecord.DeployRecordsTable,
+			Columns: compilerecord.DeployRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: deployrecord.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cruo.mutation.DeployRecordsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   compilerecord.DeployRecordsTable,
+			Columns: compilerecord.DeployRecordsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: deployrecord.FieldID,
 				},
 			},
 		}

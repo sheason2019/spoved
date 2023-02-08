@@ -29,6 +29,7 @@ func (CompileRecord) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("operator", User.Type).Ref("compile_records"),
 		edge.From("project", Project.Type).Ref("compile_records"),
+		edge.To("deploy_records", DeployRecord.Type),
 	}
 }
 

@@ -19,6 +19,8 @@ const (
 	EdgeProjects = "projects"
 	// EdgeCompileRecords holds the string denoting the compile_records edge name in mutations.
 	EdgeCompileRecords = "compile_records"
+	// EdgeDeployRecords holds the string denoting the deploy_records edge name in mutations.
+	EdgeDeployRecords = "deploy_records"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// ProjectsTable is the table that holds the projects relation/edge. The primary key declared below.
@@ -31,6 +33,11 @@ const (
 	// CompileRecordsInverseTable is the table name for the CompileRecord entity.
 	// It exists in this package in order to avoid circular dependency with the "compilerecord" package.
 	CompileRecordsInverseTable = "compile_records"
+	// DeployRecordsTable is the table that holds the deploy_records relation/edge. The primary key declared below.
+	DeployRecordsTable = "user_deploy_records"
+	// DeployRecordsInverseTable is the table name for the DeployRecord entity.
+	// It exists in this package in order to avoid circular dependency with the "deployrecord" package.
+	DeployRecordsInverseTable = "deploy_records"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -49,6 +56,9 @@ var (
 	// CompileRecordsPrimaryKey and CompileRecordsColumn2 are the table columns denoting the
 	// primary key for the compile_records relation (M2M).
 	CompileRecordsPrimaryKey = []string{"user_id", "compile_record_id"}
+	// DeployRecordsPrimaryKey and DeployRecordsColumn2 are the table columns denoting the
+	// primary key for the deploy_records relation (M2M).
+	DeployRecordsPrimaryKey = []string{"user_id", "deploy_record_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

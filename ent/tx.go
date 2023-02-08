@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// CompileRecord is the client for interacting with the CompileRecord builders.
 	CompileRecord *CompileRecordClient
+	// DeployRecord is the client for interacting with the DeployRecord builders.
+	DeployRecord *DeployRecordClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
 	// User is the client for interacting with the User builders.
@@ -150,6 +152,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.CompileRecord = NewCompileRecordClient(tx.config)
+	tx.DeployRecord = NewDeployRecordClient(tx.config)
 	tx.Project = NewProjectClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

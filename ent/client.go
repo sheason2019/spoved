@@ -11,6 +11,7 @@ import (
 	"github.com/sheason2019/spoved/ent/migrate"
 
 	"github.com/sheason2019/spoved/ent/compilerecord"
+	"github.com/sheason2019/spoved/ent/deployrecord"
 	"github.com/sheason2019/spoved/ent/project"
 	"github.com/sheason2019/spoved/ent/user"
 
@@ -26,6 +27,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// CompileRecord is the client for interacting with the CompileRecord builders.
 	CompileRecord *CompileRecordClient
+	// DeployRecord is the client for interacting with the DeployRecord builders.
+	DeployRecord *DeployRecordClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
 	// User is the client for interacting with the User builders.
@@ -44,6 +47,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.CompileRecord = NewCompileRecordClient(c.config)
+	c.DeployRecord = NewDeployRecordClient(c.config)
 	c.Project = NewProjectClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -80,6 +84,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:           ctx,
 		config:        cfg,
 		CompileRecord: NewCompileRecordClient(cfg),
+		DeployRecord:  NewDeployRecordClient(cfg),
 		Project:       NewProjectClient(cfg),
 		User:          NewUserClient(cfg),
 	}, nil
@@ -102,6 +107,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:           ctx,
 		config:        cfg,
 		CompileRecord: NewCompileRecordClient(cfg),
+		DeployRecord:  NewDeployRecordClient(cfg),
 		Project:       NewProjectClient(cfg),
 		User:          NewUserClient(cfg),
 	}, nil
@@ -133,6 +139,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.CompileRecord.Use(hooks...)
+	c.DeployRecord.Use(hooks...)
 	c.Project.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -141,6 +148,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.CompileRecord.Intercept(interceptors...)
+	c.DeployRecord.Intercept(interceptors...)
 	c.Project.Intercept(interceptors...)
 	c.User.Intercept(interceptors...)
 }
@@ -150,6 +158,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *CompileRecordMutation:
 		return c.CompileRecord.mutate(ctx, m)
+	case *DeployRecordMutation:
+		return c.DeployRecord.mutate(ctx, m)
 	case *ProjectMutation:
 		return c.Project.mutate(ctx, m)
 	case *UserMutation:
@@ -284,6 +294,22 @@ func (c *CompileRecordClient) QueryProject(cr *CompileRecord) *ProjectQuery {
 	return query
 }
 
+// QueryDeployRecords queries the deploy_records edge of a CompileRecord.
+func (c *CompileRecordClient) QueryDeployRecords(cr *CompileRecord) *DeployRecordQuery {
+	query := (&DeployRecordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := cr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(compilerecord.Table, compilerecord.FieldID, id),
+			sqlgraph.To(deployrecord.Table, deployrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, compilerecord.DeployRecordsTable, compilerecord.DeployRecordsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(cr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *CompileRecordClient) Hooks() []Hook {
 	return c.hooks.CompileRecord
@@ -306,6 +332,156 @@ func (c *CompileRecordClient) mutate(ctx context.Context, m *CompileRecordMutati
 		return (&CompileRecordDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown CompileRecord mutation op: %q", m.Op())
+	}
+}
+
+// DeployRecordClient is a client for the DeployRecord schema.
+type DeployRecordClient struct {
+	config
+}
+
+// NewDeployRecordClient returns a client for the DeployRecord from the given config.
+func NewDeployRecordClient(c config) *DeployRecordClient {
+	return &DeployRecordClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `deployrecord.Hooks(f(g(h())))`.
+func (c *DeployRecordClient) Use(hooks ...Hook) {
+	c.hooks.DeployRecord = append(c.hooks.DeployRecord, hooks...)
+}
+
+// Use adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `deployrecord.Intercept(f(g(h())))`.
+func (c *DeployRecordClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DeployRecord = append(c.inters.DeployRecord, interceptors...)
+}
+
+// Create returns a builder for creating a DeployRecord entity.
+func (c *DeployRecordClient) Create() *DeployRecordCreate {
+	mutation := newDeployRecordMutation(c.config, OpCreate)
+	return &DeployRecordCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DeployRecord entities.
+func (c *DeployRecordClient) CreateBulk(builders ...*DeployRecordCreate) *DeployRecordCreateBulk {
+	return &DeployRecordCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DeployRecord.
+func (c *DeployRecordClient) Update() *DeployRecordUpdate {
+	mutation := newDeployRecordMutation(c.config, OpUpdate)
+	return &DeployRecordUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DeployRecordClient) UpdateOne(dr *DeployRecord) *DeployRecordUpdateOne {
+	mutation := newDeployRecordMutation(c.config, OpUpdateOne, withDeployRecord(dr))
+	return &DeployRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DeployRecordClient) UpdateOneID(id int) *DeployRecordUpdateOne {
+	mutation := newDeployRecordMutation(c.config, OpUpdateOne, withDeployRecordID(id))
+	return &DeployRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DeployRecord.
+func (c *DeployRecordClient) Delete() *DeployRecordDelete {
+	mutation := newDeployRecordMutation(c.config, OpDelete)
+	return &DeployRecordDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DeployRecordClient) DeleteOne(dr *DeployRecord) *DeployRecordDeleteOne {
+	return c.DeleteOneID(dr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DeployRecordClient) DeleteOneID(id int) *DeployRecordDeleteOne {
+	builder := c.Delete().Where(deployrecord.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DeployRecordDeleteOne{builder}
+}
+
+// Query returns a query builder for DeployRecord.
+func (c *DeployRecordClient) Query() *DeployRecordQuery {
+	return &DeployRecordQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDeployRecord},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DeployRecord entity by its id.
+func (c *DeployRecordClient) Get(ctx context.Context, id int) (*DeployRecord, error) {
+	return c.Query().Where(deployrecord.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DeployRecordClient) GetX(ctx context.Context, id int) *DeployRecord {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOperator queries the operator edge of a DeployRecord.
+func (c *DeployRecordClient) QueryOperator(dr *DeployRecord) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := dr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(deployrecord.Table, deployrecord.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, deployrecord.OperatorTable, deployrecord.OperatorPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(dr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCompileRecord queries the compile_record edge of a DeployRecord.
+func (c *DeployRecordClient) QueryCompileRecord(dr *DeployRecord) *CompileRecordQuery {
+	query := (&CompileRecordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := dr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(deployrecord.Table, deployrecord.FieldID, id),
+			sqlgraph.To(compilerecord.Table, compilerecord.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, deployrecord.CompileRecordTable, deployrecord.CompileRecordPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(dr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DeployRecordClient) Hooks() []Hook {
+	return c.hooks.DeployRecord
+}
+
+// Interceptors returns the client interceptors.
+func (c *DeployRecordClient) Interceptors() []Interceptor {
+	return c.inters.DeployRecord
+}
+
+func (c *DeployRecordClient) mutate(ctx context.Context, m *DeployRecordMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DeployRecordCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DeployRecordUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DeployRecordUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DeployRecordDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DeployRecord mutation op: %q", m.Op())
 	}
 }
 
@@ -577,6 +753,22 @@ func (c *UserClient) QueryCompileRecords(u *User) *CompileRecordQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(compilerecord.Table, compilerecord.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, user.CompileRecordsTable, user.CompileRecordsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDeployRecords queries the deploy_records edge of a User.
+func (c *UserClient) QueryDeployRecords(u *User) *DeployRecordQuery {
+	query := (&DeployRecordClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(deployrecord.Table, deployrecord.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.DeployRecordsTable, user.DeployRecordsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

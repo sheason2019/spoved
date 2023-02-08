@@ -21,6 +21,18 @@ func (f CompileRecordFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CompileRecordMutation", m)
 }
 
+// The DeployRecordFunc type is an adapter to allow the use of ordinary
+// function as DeployRecord mutator.
+type DeployRecordFunc func(context.Context, *ent.DeployRecordMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DeployRecordFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DeployRecordMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DeployRecordMutation", m)
+}
+
 // The ProjectFunc type is an adapter to allow the use of ordinary
 // function as Project mutator.
 type ProjectFunc func(context.Context, *ent.ProjectMutation) (ent.Value, error)
