@@ -7,5 +7,5 @@ import (
 func main() {
 	r := router.SetupRouter()
 
-	r.Run()
+	r.Run(":80")
 }
