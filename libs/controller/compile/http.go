@@ -9,7 +9,7 @@ type compileController struct{}
 
 var cc compile.CompileApi = compileController{}
 
-func BindController(r *gin.Engine) {
+func BindController(r gin.IRoutes) {
 	bindPostCompile(r)
 	bindGetCompileRecords(r)
 }

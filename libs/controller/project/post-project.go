@@ -24,7 +24,7 @@ func (ProjectController) PostProject(ctx *gin.Context, proj project.Project) pro
 	}
 }
 
-func bindPostProject(r *gin.Engine) {
+func bindPostProject(r gin.IRoutes) {
 	r.POST(project.ProjectApiDefinition.POST_PROJECT_PATH, func(ctx *gin.Context) {
 		props := middleware.GetProps[project.Project](ctx)
 		ctx.JSON(200, pc.PostProject(ctx, *props))

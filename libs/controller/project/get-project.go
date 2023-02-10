@@ -22,7 +22,7 @@ func (ProjectController) GetProject(ctx *gin.Context, payload project.GetProject
 	return transfer.ProjectToIdl(proj)
 }
 
-func bindGetProject(r *gin.Engine) {
+func bindGetProject(r gin.IRoutes) {
 	r.GET(project.ProjectApiDefinition.GET_PROJECT_PATH, func(ctx *gin.Context) {
 		props := middleware.GetProps[project.GetProjectPayload](ctx)
 		ctx.JSON(200, pc.GetProject(ctx, *props))

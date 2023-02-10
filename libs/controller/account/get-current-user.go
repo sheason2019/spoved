@@ -14,7 +14,7 @@ func (AccountController) GetCurrentUser(ctx *gin.Context) account.User {
 	}
 }
 
-func bindGetCurrentUser(r *gin.Engine) {
+func bindGetCurrentUser(r gin.IRoutes) {
 	r.GET(account.AccountApiDefinition.GET_CURRENT_USER_PATH, func(ctx *gin.Context) {
 		ctx.JSON(200, ac.GetCurrentUser(ctx))
 	})

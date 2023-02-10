@@ -9,7 +9,7 @@ type AccountController struct{}
 
 var ac account.AccountApi = AccountController{}
 
-func BindController(r *gin.Engine) {
+func BindController(r gin.IRoutes) {
 	bindGetAccountCrypto(r)
 	bindRegist(r)
 	bindGetUsernameRepeat(r)

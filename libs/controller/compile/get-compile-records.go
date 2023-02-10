@@ -29,7 +29,7 @@ func (compileController) GetCompileRecords(ctx *gin.Context, payload compile.Get
 	}
 }
 
-func bindGetCompileRecords(r *gin.Engine) {
+func bindGetCompileRecords(r gin.IRoutes) {
 	r.GET(compile.CompileApiDefinition.GET_COMPILE_RECORDS_PATH, func(ctx *gin.Context) {
 		props := middleware.GetProps[compile.GetCompileRecordsPayload](ctx)
 		ctx.JSON(200, cc.GetCompileRecords(ctx, *props))

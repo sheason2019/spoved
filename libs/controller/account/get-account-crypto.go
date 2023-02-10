@@ -18,7 +18,7 @@ func (AccountController) GetAccountCrypto(c *gin.Context) account.AccountCrypto 
 	}
 }
 
-func bindGetAccountCrypto(r *gin.Engine) {
+func bindGetAccountCrypto(r gin.IRoutes) {
 	r.GET(account.AccountApiDefinition.GET_ACCOUNT_CRYPTO_PATH, func(ctx *gin.Context) {
 		ctx.JSON(200, ac.GetAccountCrypto(ctx))
 	})

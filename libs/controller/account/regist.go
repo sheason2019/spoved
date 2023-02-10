@@ -15,7 +15,7 @@ func (AccountController) Regist(c *gin.Context, account account.AccountInfo) {
 	}
 }
 
-func bindRegist(r *gin.Engine) {
+func bindRegist(r gin.IRoutes) {
 	r.POST(account.AccountApiDefinition.REGIST_PATH, func(ctx *gin.Context) {
 		props := middleware.GetProps[account.AccountInfo](ctx)
 		ac.Regist(ctx, *props)

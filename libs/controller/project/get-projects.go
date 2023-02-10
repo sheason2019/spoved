@@ -30,7 +30,7 @@ func (ProjectController) GetProjects(ctx *gin.Context, pagination common.Paginat
 	}
 }
 
-func bindGetProjects(r *gin.Engine) {
+func bindGetProjects(r gin.IRoutes) {
 	r.GET(project.ProjectApiDefinition.GET_PROJECTS_PATH, func(ctx *gin.Context) {
 		props := middleware.GetProps[common.Pagination](ctx)
 		ctx.JSON(200, pc.GetProjects(ctx, *props))

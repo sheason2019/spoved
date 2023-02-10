@@ -20,7 +20,7 @@ func (AccountController) GetSshPubKey(ctx *gin.Context) account.GetSshPubKeyResp
 	}
 }
 
-func bindGetSshPubKey(r *gin.Engine) {
+func bindGetSshPubKey(r gin.IRoutes) {
 	r.GET(account.AccountApiDefinition.GET_SSH_PUB_KEY_PATH, func(ctx *gin.Context) {
 		ctx.JSON(200, ac.GetSshPubKey(ctx))
 	})

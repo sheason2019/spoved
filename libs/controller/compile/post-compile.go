@@ -31,7 +31,7 @@ func (compileController) PostCompile(ctx *gin.Context, payload compile.CompileRe
 	return *transfer.CompileRecordToIdl(ctx, record)
 }
 
-func bindPostCompile(r *gin.Engine) {
+func bindPostCompile(r gin.IRoutes) {
 	r.POST(compile.CompileApiDefinition.POST_COMPILE_PATH, func(ctx *gin.Context) {
 		props := middleware.GetProps[compile.CompileRecord](ctx)
 		ctx.JSON(200, cc.PostCompile(ctx, *props))
