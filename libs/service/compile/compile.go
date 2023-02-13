@@ -10,7 +10,6 @@ import (
 func Compile(ctx context.Context, image, nextVersion, branch string, proj *dao.Project, usr *dao.User) (*dao.CompileOrder, error) {
 	statusCode := 0
 
-	client := dbc.GetClient()
 	order := &dao.CompileOrder{
 		Branch:     branch,
 		Image:      image,
@@ -19,7 +18,7 @@ func Compile(ctx context.Context, image, nextVersion, branch string, proj *dao.P
 		Operator:   *usr,
 		Project:    *proj,
 	}
-	err := client.WithContext(ctx).Save(order).Error
+	err := CreateCompileOrder(ctx, order)
 
 	go func() {
 		_, err := CompileRun(image, nextVersion, branch, proj, usr.Username)

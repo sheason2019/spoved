@@ -8,6 +8,8 @@ import (
 )
 
 func main() {
+	// 初始化 Spoved
+	k3s_service.InitSpoved()
 	// 初始化前端服务
 	k3s_service.InitSpovedFe(context.TODO())
 

@@ -17,18 +17,8 @@ import (
 
 // 初始化前端Pod
 func InitSpovedFe(ctx context.Context) error {
-	config, err := getConfig()
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
 	// 寻找 spoved-fe 的svc
-	_, err = findSpovedFeService(ctx, clientset)
+	_, err := findSpovedFeService(ctx, clientSet)
 	// 如果 spoved-fe 已初始化则不重复创建
 	if err == nil {
 		fmt.Println("spoved-fe 已存在，跳过初始化步骤。")
@@ -41,7 +31,7 @@ func InitSpovedFe(ctx context.Context) error {
 	}
 
 	// 否则创建 spoved-fe
-	_, _, err = createSpovedFe(ctx, clientset)
+	_, _, err = createSpovedFe(ctx, clientSet)
 	if err != nil {
 		return err
 	}
@@ -109,13 +99,14 @@ func createSpovedFeService(ctx context.Context, clientset *kubernetes.Clientset)
 func createSpovedFeDeployment(ctx context.Context, clientset *kubernetes.Clientset) (*appv1.Deployment, error) {
 	deployment := &appv1.Deployment{
 		ObjectMeta: meta_v1.ObjectMeta{
-			Name: "spoved-fe-deployment",
+			Name: "deployment-",
 		},
 		Spec: appv1.DeploymentSpec{
 			Replicas: int32Ptr(1),
 			Selector: &meta_v1.LabelSelector{
 				MatchLabels: map[string]string{
-					"run": "spoved-fe-deployment",
+					"owner": "root",
+					"name":  "spoved-fe",
 				},
 			},
 			Template: v1.PodTemplateSpec{

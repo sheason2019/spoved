@@ -6,6 +6,7 @@ import (
 
 type DeployOrder struct {
 	gorm.Model
+	// 部署时使用的镜像名称
 	Image      string
 	StatusCode int
 
