@@ -3,7 +3,7 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"github.com/sheason2019/spoved/ent"
+	"github.com/sheason2019/spoved/libs/dao"
 	account_service "github.com/sheason2019/spoved/libs/service/account/account"
 	login_service "github.com/sheason2019/spoved/libs/service/account/login"
 )
@@ -28,19 +28,19 @@ func UserMiddleware(ctx *gin.Context) {
 }
 
 // 从Token中获取当前请求的用户信息
-func GetCurrentUser(ctx *gin.Context) (*ent.User, error) {
+func GetCurrentUser(ctx *gin.Context) (*dao.User, error) {
 	value, exist := ctx.Get("user")
 	if !exist {
 		return nil, nil
 	}
 
-	usr, ok := value.(*ent.User)
+	usr, ok := value.(*dao.User)
 	if !ok {
 		return nil, errors.WithStack(errors.New("获取用户信息失败"))
 	}
 
 	// 在数据库中索引用户
-	usr, e := account_service.FindUserByUsername(usr.Username)
+	usr, e := account_service.FindUserByUsername(ctx, usr.Username)
 	if e != nil {
 		return nil, e
 	}
@@ -52,7 +52,7 @@ func GetCurrentUser(ctx *gin.Context) (*ent.User, error) {
 }
 
 // 从Token中获取当前请求的用户信息，如果信息不存在则Panic
-func MustGetCurrentUser(ctx *gin.Context) *ent.User {
+func MustGetCurrentUser(ctx *gin.Context) *dao.User {
 	usr, e := GetCurrentUser(ctx)
 	if e != nil {
 		panic(e)

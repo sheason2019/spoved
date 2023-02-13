@@ -9,7 +9,7 @@ import (
 
 func (AccountController) Regist(c *gin.Context, account account.AccountInfo) {
 	// 注册逻辑 接受用户信息，校验并生成用户Record
-	_, e := regist_service.Regist(&account)
+	_, e := regist_service.Regist(c, &account)
 	if e != nil {
 		panic(e)
 	}

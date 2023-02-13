@@ -12,7 +12,11 @@ require github.com/golang-jwt/jwt/v4 v4.4.3
 
 require (
 	github.com/imdario/mergo v0.3.6 // indirect
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	gorm.io/gorm v1.24.5 // indirect
 )
 
 require (
@@ -77,4 +81,5 @@ require (
 	golang.org/x/text v0.6.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gorm.io/driver/sqlite v1.4.4
 )

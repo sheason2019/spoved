@@ -13,22 +13,22 @@ import (
 func (compileController) PostCompile(ctx *gin.Context, payload compile.CompileRecord) compile.CompileRecord {
 	currentUser := middleware.MustGetCurrentUser(ctx)
 
-	proj, err := project_service.FindProjectById(payload.ProjectId)
+	proj, err := project_service.FindProjectById(ctx, payload.ProjectId)
 	if err != nil {
 		panic(err)
 	}
 
-	nv, err := compile_service.FindNextVersionForProject(proj.ID, payload.Version)
+	nv, err := compile_service.FindNextVersionForProject(ctx, int(proj.ID), payload.Version)
 	if err != nil {
 		panic(err)
 	}
 
-	record, err := compile_service.Compile(ctx, payload.Image, nv, payload.Branch, proj, currentUser)
+	order, err := compile_service.Compile(ctx, payload.Image, nv, payload.Branch, proj, currentUser)
 	if err != nil {
 		panic(err)
 	}
 
-	return *transfer.CompileRecordToIdl(ctx, record)
+	return *transfer.CompileRecordToIdl(order)
 }
 
 func bindPostCompile(r gin.IRoutes) {

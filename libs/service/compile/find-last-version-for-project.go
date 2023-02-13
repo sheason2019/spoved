@@ -1,9 +1,13 @@
 package compile_service
 
-import "github.com/pkg/errors"
+import (
+	"context"
 
-func FindNextVersionForProject(projectId int, variant string) (string, error) {
-	lastRecord, err := FindLastRecordByProjectId(projectId)
+	"github.com/pkg/errors"
+)
+
+func FindNextVersionForProject(ctx context.Context, projectId int, variant string) (string, error) {
+	lastRecord, err := FindLastRecordByProjectId(ctx, projectId)
 	if err != nil {
 		return "", errors.WithStack(err)
 	}

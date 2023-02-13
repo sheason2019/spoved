@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/sheason2019/spoved/ent"
+	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/env"
 	git_service "github.com/sheason2019/spoved/libs/service/git"
 	images "github.com/sheason2019/spoved/libs/service/images"
 )
 
 // 编译项目
-func CompileRun(image, nextVersion, branch string, proj *ent.Project, username string) ([]string, error) {
+func CompileRun(image, nextVersion, branch string, proj *dao.Project, username string) ([]string, error) {
 	outputs := []string{}
 
 	// TODO: 操作人权限校验
@@ -25,11 +25,11 @@ func CompileRun(image, nextVersion, branch string, proj *ent.Project, username s
 	}
 
 	// Git代码复制到的地址
-	projDir := env.DataRoot + proj.DirPath + "/" + nextVersion
+	projDir := env.DataRoot + proj.DirPath() + "/" + nextVersion
 
 	// 拉取代码
 	outputs = append(outputs, "正在尝试拉取Git仓库")
-	output, err := git_service.GitClone(proj.GitURL, projDir, branch, username)
+	output, err := git_service.GitClone(proj.GitUrl, projDir, branch, username)
 	if err != nil {
 		outputs = append(outputs, "拉取Git仓库失败")
 		return outputs, errors.WithStack(err)

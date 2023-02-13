@@ -1,13 +1,14 @@
 package regist_service
 
 import (
+	"context"
 	"fmt"
 	"testing"
 )
 
 // 测试创建用户
 func TestCreateUser(t *testing.T) {
-	usr, e := CreateUser("testUser1", "test_password", "test_salt")
+	usr, e := CreateUser(context.TODO(), "testUser1", "test_password", "test_salt")
 	if e != nil {
 		t.Errorf("%+v", e)
 		return

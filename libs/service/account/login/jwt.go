@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/pkg/errors"
-	"github.com/sheason2019/spoved/ent"
+	"github.com/sheason2019/spoved/libs/dao"
 	file_service "github.com/sheason2019/spoved/libs/service/file"
 	"github.com/sheason2019/spoved/libs/utils"
 )
@@ -15,7 +15,7 @@ var jwt_secret_file = "/jwt_secret"
 var jwtSecret string
 
 type JwtClaims struct {
-	ent.User
+	dao.User
 	jwt.RegisteredClaims
 }
 
@@ -28,7 +28,7 @@ func init() {
 }
 
 // 生成
-func GenerateJwt(user *ent.User) (string, error) {
+func GenerateJwt(user *dao.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, JwtClaims{
 		User: *user,
 		RegisteredClaims: jwt.RegisteredClaims{

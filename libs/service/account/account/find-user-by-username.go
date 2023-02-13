@@ -4,21 +4,23 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/sheason2019/spoved/ent"
-	"github.com/sheason2019/spoved/ent/user"
+	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
+	"gorm.io/gorm"
 )
 
-func FindUserByUsername(username string) (*ent.User, error) {
+func FindUserByUsername(ctx context.Context, username string) (*dao.User, error) {
 	client := dbc.GetClient()
 
-	user, err := client.User.
-		Query().
-		Where(user.UsernameEQ(username)).
-		First(context.Background())
-	if ent.IsNotFound(err) {
+	user := &dao.User{
+		Username: username,
+	}
+
+	err := client.WithContext(ctx).Where(&user).Limit(1).Find(&user).Error
+	if err == gorm.ErrRecordNotFound {
 		return nil, nil
 	}
+
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

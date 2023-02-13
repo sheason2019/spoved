@@ -4,27 +4,28 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/sheason2019/spoved/ent"
-	"github.com/sheason2019/spoved/ent/compilerecord"
-	"github.com/sheason2019/spoved/ent/project"
+	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
+	"gorm.io/gorm"
 )
 
-func FindLastRecordByProjectId(id int) (*ent.CompileRecord, error) {
-	record, err := dbc.GetClient().CompileRecord.Query().
-		Where(
-			compilerecord.HasProjectWith(
-				project.IDEQ(id),
-			),
-		).
-		Order(ent.Desc(compilerecord.FieldCreatedAt)).
-		First(context.Background())
-	if ent.IsNotFound(err) {
+func FindLastRecordByProjectId(ctx context.Context, id int) (*dao.CompileOrder, error) {
+	client := dbc.GetClient()
+
+	order := &dao.CompileOrder{}
+	err := client.WithContext(ctx).
+		InnerJoins("Project", client.Where(&dao.Project{Model: gorm.Model{ID: order.ID}})).
+		Order("created_at desc").
+		Limit(1).
+		Find(order).
+		Error
+
+	if err == gorm.ErrRecordNotFound {
 		return nil, nil
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	return record, nil
+	return order, nil
 }

@@ -1,20 +1,22 @@
 package login_service
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	"github.com/sheason2019/spoved/libs/idl-lib/account"
 	account_service "github.com/sheason2019/spoved/libs/service/account/account"
 	"github.com/sheason2019/spoved/libs/service/account/password"
 )
 
-func Login(info *account.AccountInfo) (string, error) {
+func Login(ctx context.Context, info *account.AccountInfo) (string, error) {
 	// 将用户上传的PWD解析成明文
 	err := password.DecodePassword(info)
 	if err != nil {
 		return "", err
 	}
 	// 获取指定的用户信息
-	usr, err := account_service.FindUserByUsername(info.Username)
+	usr, err := account_service.FindUserByUsername(ctx, info.Username)
 	if err != nil {
 		return "", err
 	}

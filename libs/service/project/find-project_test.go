@@ -1,6 +1,7 @@
 package project_service_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -13,7 +14,7 @@ func TestFindProjectTest(t *testing.T) {
 	username := "sheason"
 	projName := "node-template"
 
-	proj, err := project_service.FindProject(username, projName)
+	proj, err := project_service.FindProject(context.TODO(), username, projName)
 	if err != nil {
 		t.Errorf("%+v", err)
 		return

@@ -10,16 +10,16 @@ import (
 func (ProjectController) PostProject(ctx *gin.Context, proj project.Project) project.Project {
 	usr := middleware.MustGetCurrentUser(ctx)
 
-	entProj, e := project_service.CreateProject(&proj, usr)
+	projDao, e := project_service.CreateProject(ctx, &proj, usr)
 	if e != nil {
 		panic(e)
 	}
 
 	return project.Project{
-		Id:          entProj.ID,
-		ProjectName: entProj.ProjectName,
-		Describe:    entProj.Describe,
-		GitUrl:      entProj.GitURL,
+		Id:          int(projDao.ID),
+		ProjectName: projDao.ProjectName,
+		Describe:    projDao.Describe,
+		GitUrl:      projDao.GitUrl,
 		Owner:       usr.Username,
 	}
 }

@@ -11,7 +11,7 @@ import (
 )
 
 func TestCompile(t *testing.T) {
-	proj, err := project_service.FindProjectById(1)
+	proj, err := project_service.FindProjectById(context.TODO(), 1)
 	if err != nil {
 		t.Errorf("%+v", err)
 		return

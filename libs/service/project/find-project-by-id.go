@@ -4,21 +4,22 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/sheason2019/spoved/ent"
-	"github.com/sheason2019/spoved/ent/project"
+	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
+	"gorm.io/gorm"
 )
 
-func FindProjectById(id int) (*ent.Project, error) {
+func FindProjectById(ctx context.Context, id int) (*dao.Project, error) {
 	client := dbc.GetClient()
 
-	proj, err := client.Project.Query().Where(project.IDEQ(id)).First(context.Background())
-	if ent.IsNotFound(err) {
+	projDao := &dao.Project{}
+	err := client.WithContext(ctx).Where("id = ?", id).Find(projDao).Error
+	if err == gorm.ErrRecordNotFound {
 		return nil, nil
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	return proj, nil
+	return projDao, nil
 }

@@ -8,7 +8,7 @@ import (
 )
 
 func (AccountController) GetUsernameRepeat(ctx *gin.Context, payload account.GetUsernameRepeatPayload) account.GetUsernameRepeatResponse {
-	usr, e := account_service.FindUserByUsername(payload.Name)
+	usr, e := account_service.FindUserByUsername(ctx, payload.Name)
 	if e != nil {
 		panic(e)
 	}
