@@ -11,7 +11,7 @@ import (
 	output_command "github.com/sheason2019/spoved/libs/utils/output-command"
 )
 
-func GitClone(url, codeDir, branch, username string) (output string, err error) {
+func GitClone(url, codeDir, branch, username string) (err error) {
 	sshDir := env.DataRoot + "/account/" + username + "/.ssh"
 
 	utils.TimeoutFunc(context.Background(), func(ctx context.Context, cancel func()) {
@@ -30,12 +30,11 @@ func GitClone(url, codeDir, branch, username string) (output string, err error) 
 		)
 
 		err = cmd.Run()
-		output = cmd.Output.String()
 		cancel()
 	}, 15*time.Second)
 
 	if err != nil {
-		return output, errors.WithStack(err)
+		return errors.WithStack(err)
 	}
-	return output, nil
+	return nil
 }

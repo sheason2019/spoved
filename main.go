@@ -3,15 +3,13 @@ package main
 import (
 	"context"
 
+	"github.com/sheason2019/spoved/libs/initial"
 	"github.com/sheason2019/spoved/libs/router"
-	k3s_service "github.com/sheason2019/spoved/libs/service/k3s"
 )
 
 func main() {
-	// 初始化 Spoved
-	k3s_service.InitSpoved()
-	// 初始化前端服务
-	k3s_service.InitSpovedFe(context.TODO())
+	ctx := context.TODO()
+	initial.Initial(ctx)
 
 	r := router.SetupRouter()
 

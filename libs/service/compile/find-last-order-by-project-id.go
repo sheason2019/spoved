@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func FindLastRecordByProjectId(ctx context.Context, id int) (*dao.CompileOrder, error) {
+func FindLastOrderByProjectId(ctx context.Context, id int) (*dao.CompileOrder, error) {
 	client := dbc.GetClient()
 
 	order := &dao.CompileOrder{}

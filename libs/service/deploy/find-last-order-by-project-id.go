@@ -1,4 +1,4 @@
-package project_service
+package deploy_service
 
 import (
 	"context"
@@ -9,17 +9,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func FindProject(ctx context.Context, username, projName string) (*dao.Project, error) {
+func FindLastOrderByCompileOrderID(ctx context.Context, coID int) (*dao.DeployOrder, error) {
 	client := dbc.GetClient()
 
-	projDao := &dao.Project{}
+	order := &dao.DeployOrder{}
 	err := client.WithContext(ctx).
-		Where("project_name = ?", projName).
-		InnerJoins("Users", client.Where(
-			&dao.User{Username: username}),
-		).
-		Limit(0).
-		Find(projDao).
+		Where("compile_order_id = ?", coID).
+		Order("created_at desc").
+		Limit(1).
+		Find(order).
 		Error
 
 	if err == gorm.ErrRecordNotFound {
@@ -29,5 +27,5 @@ func FindProject(ctx context.Context, username, projName string) (*dao.Project, 
 		return nil, errors.WithStack(err)
 	}
 
-	return projDao, nil
+	return order, nil
 }

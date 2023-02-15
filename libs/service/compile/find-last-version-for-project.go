@@ -7,7 +7,7 @@ import (
 )
 
 func FindNextVersionForProject(ctx context.Context, projectId int, variant string) (string, error) {
-	lastRecord, err := FindLastRecordByProjectId(ctx, projectId)
+	lastRecord, err := FindLastOrderByProjectId(ctx, projectId)
 	if err != nil {
 		return "", errors.WithStack(err)
 	}
