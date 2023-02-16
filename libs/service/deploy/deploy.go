@@ -24,6 +24,7 @@ func Deploy(ctx context.Context, operator *dao.User, co *dao.CompileOrder, image
 	}
 
 	// 执行部署逻辑
+	go DeployRun(ctx, deployDao)
 
 	return deployDao, nil
 }

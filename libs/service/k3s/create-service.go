@@ -2,11 +2,11 @@ package k3s_service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
 	project_service "github.com/sheason2019/spoved/libs/service/project"
-	"github.com/sheason2019/spoved/libs/utils"
 	v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -18,21 +18,7 @@ func CreateServiceByProject(ctx context.Context, proj *dao.Project) error {
 		return err
 	}
 
-	// 获取一个随机且独特的Service名称
-	var serviceName string
-
-	for {
-		name := utils.RandomStr(16)
-		serviceName := "service-" + name
-
-		exist, err := project_service.FindProjectByServiceName(ctx, serviceName)
-		if err != nil {
-			return err
-		}
-		if exist == nil {
-			break
-		}
-	}
+	serviceName := "service-proj-id-" + fmt.Sprint(proj.ID)
 
 	// 创建Selector
 	selector := meta_v1.LabelSelector{

@@ -31,7 +31,7 @@ func initSpovedFe(ctx context.Context, root *dao.User) error {
 		return errors.WithStack(err)
 	}
 
-	// 执行编译逻辑，构建出spoved-fe的镜像
+	// 执行编译逻辑
 	co, err := compile_service.Compile(ctx, "node:16-alpine", "0.0.1", "master", proj, root)
 	if err != nil {
 		return errors.WithStack(err)

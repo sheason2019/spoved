@@ -21,7 +21,8 @@ func Compile(ctx context.Context, image, nextVersion, branch string, proj *dao.P
 		Context:      ctx,
 		CompileOrder: order,
 	}
-	go CompileRun(compileCtx, image, nextVersion, branch, proj, usr.Username)
+
+	go CompileRun(compileCtx)
 
 	return order, err
 }

@@ -1,6 +1,7 @@
 package compile_service
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -36,4 +37,23 @@ func nextVersion(version string, variant string) (string, error) {
 	}
 
 	return fmt.Sprintf("%d.%d.%d", versionList[0], versionList[1], versionList[2]), nil
+}
+
+func FindNextVersionForProject(ctx context.Context, projectId int, variant string) (string, error) {
+	lastRecord, err := FindLastOrderByProjectId(ctx, projectId)
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+
+	currentVersion := "0.0.0"
+	if lastRecord != nil {
+		currentVersion = lastRecord.Version
+	}
+
+	nv, err := nextVersion(currentVersion, variant)
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+
+	return nv, nil
 }
