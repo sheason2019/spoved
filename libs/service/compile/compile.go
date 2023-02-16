@@ -17,12 +17,7 @@ func Compile(ctx context.Context, image, nextVersion, branch string, proj *dao.P
 	}
 	err := CreateCompileOrder(ctx, order)
 
-	compileCtx := CompileContext{
-		Context:      ctx,
-		CompileOrder: order,
-	}
-
-	go CompileRun(compileCtx)
+	go CompileRun(ctx, order)
 
 	return order, err
 }

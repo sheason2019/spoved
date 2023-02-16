@@ -1,28 +1,28 @@
 package compile_service
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/pkg/errors"
+	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
 	images "github.com/sheason2019/spoved/libs/service/images"
 	k3s_service "github.com/sheason2019/spoved/libs/service/k3s"
 )
 
 // 编译项目
-func CompileRun(ctx CompileContext) (err error) {
-	co := ctx.CompileOrder
-
+func CompileRun(ctx context.Context, co *dao.CompileOrder) (err error) {
 	defer func(cause error) {
 		if cause == nil {
-			ctx.CompileOrder.StatusCode = 1
+			co.StatusCode = 1
 		} else {
-			ctx.CompileOrder.StatusCode = -1
+			co.StatusCode = -1
 		}
 
 		fmt.Println(err)
 
-		dbc.DB.WithContext(ctx).Save(ctx.CompileOrder)
+		dbc.DB.WithContext(ctx).Save(co)
 	}(err)
 
 	// TODO: 操作人权限校验

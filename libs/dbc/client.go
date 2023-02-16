@@ -3,9 +3,9 @@ package dbc
 import (
 	"fmt"
 
+	"github.com/glebarez/sqlite"
 	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/env"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
