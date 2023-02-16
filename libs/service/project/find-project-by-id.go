@@ -10,7 +10,7 @@ import (
 )
 
 func FindProjectById(ctx context.Context, id int) (*dao.Project, error) {
-	client := dbc.GetClient()
+	client := dbc.DB
 
 	projDao := &dao.Project{}
 	err := client.WithContext(ctx).Where("id = ?", id).Find(projDao).Error

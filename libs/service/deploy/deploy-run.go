@@ -11,6 +11,7 @@ import (
 // 部署逻辑执行
 func DeployRun(ctx context.Context, do *dao.DeployOrder) {
 	// 创建Deployment
+	fmt.Println("创建Deployment")
 	err := k3s_service.Start(ctx, do)
 	if err != nil {
 		fmt.Println("error::", err)

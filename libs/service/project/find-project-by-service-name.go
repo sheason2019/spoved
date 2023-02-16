@@ -10,7 +10,7 @@ import (
 )
 
 func FindProjectByServiceName(ctx context.Context, serviceName string) (*dao.Project, error) {
-	client := dbc.GetClient()
+	client := dbc.DB
 
 	proj := &dao.Project{
 		ServiceName: serviceName,

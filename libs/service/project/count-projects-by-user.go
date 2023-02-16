@@ -9,7 +9,7 @@ import (
 )
 
 func CountProjectsByUser(ctx context.Context, usr *dao.User) (int64, error) {
-	client := dbc.GetClient()
+	client := dbc.DB
 
 	var count int64
 	err := client.WithContext(ctx).

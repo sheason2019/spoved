@@ -9,7 +9,7 @@ import (
 )
 
 func Deploy(ctx context.Context, operator *dao.User, co *dao.CompileOrder, image string) (any, error) {
-	client := dbc.GetClient()
+	client := dbc.DB
 
 	deployDao := &dao.DeployOrder{
 		Image:        image,

@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sheason2019/spoved/libs/dao"
 	networking_v1 "k8s.io/api/networking/v1"
+	k8s_err "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -14,7 +15,7 @@ func CreateSpovedIngress(ctx context.Context, proj *dao.Project) (*networking_v1
 	pathType := networking_v1.PathTypePrefix
 
 	exist, err := clientSet.NetworkingV1().Ingresses("default").Get(ctx, "spoved-ingress", v1.GetOptions{})
-	if err != nil {
+	if err != nil && !k8s_err.IsNotFound(err) {
 		return nil, errors.WithStack(err)
 	}
 	if exist != nil {

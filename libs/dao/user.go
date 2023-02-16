@@ -9,7 +9,7 @@ type User struct {
 	Username      string `gorm:"index"`
 	PasswordHash  string
 	PasswordSalt  string
-	Projects      []Project
-	CompileOrders []CompileOrder
-	DeployOrders  []DeployOrder
+	Projects      []Project      `gorm:"foreignKey:CreatorID"`
+	CompileOrders []CompileOrder `gorm:"foreignKey:OperatorID"`
+	DeployOrders  []DeployOrder  `gorm:"foreignKey:OperatorID"`
 }

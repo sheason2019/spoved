@@ -10,7 +10,7 @@ import (
 )
 
 func FindLastOrderByCompileOrderID(ctx context.Context, coID int) (*dao.DeployOrder, error) {
-	client := dbc.GetClient()
+	client := dbc.DB
 
 	order := &dao.DeployOrder{}
 	err := client.WithContext(ctx).

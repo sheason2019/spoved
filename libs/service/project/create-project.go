@@ -16,7 +16,7 @@ func CreateProject(ctx context.Context, proj *project_idl.Project, creator *dao.
 		return nil, err
 	}
 
-	client := dbc.GetClient()
+	client := dbc.DB
 	projDao := &dao.Project{
 		ProjectName: proj.ProjectName,
 		Describe:    proj.Describe,

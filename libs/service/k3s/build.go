@@ -32,7 +32,7 @@ func Build(ctx context.Context, co *dao.CompileOrder) error {
 								{
 									Name:      "spoved-volumn",
 									MountPath: "/code",
-									SubPath:   "/repos/" + co.Project.Creator.Username + "/" + co.Project.ProjectName + "/" + co.Version,
+									SubPath:   "repos/" + co.Project.Creator.Username + "/" + co.Project.ProjectName + "/" + co.Version,
 								},
 							},
 						},

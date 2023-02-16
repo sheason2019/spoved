@@ -29,6 +29,11 @@ func (do *DeployOrder) GenerateDeployment(deployName string) *appv1.Deployment {
 		sa = "spoved-operator"
 	}
 
+	var bootCommand []string
+	if do.Image != "root/spoved-nginx" {
+		bootCommand = []string{"sh", "/code/start.sh"}
+	}
+
 	deployment := &appv1.Deployment{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Name:      deployName,
@@ -64,14 +69,15 @@ func (do *DeployOrder) GenerateDeployment(deployName string) *appv1.Deployment {
 								{
 									Name:      "spoved-volume",
 									MountPath: "/code",
-									SubPath:   "/repos/" + userName + "/" + projName + "/" + do.CompileOrder.Version,
+									SubPath:   "repos/" + userName + "/" + projName + "/" + do.CompileOrder.Version,
 								},
 								{
 									Name:      "spoved-volume",
 									MountPath: "/data",
-									SubPath:   "/datas/" + userName + "/" + projName,
+									SubPath:   "datas/" + userName + "/" + projName,
 								},
 							},
+							Command: bootCommand,
 						},
 					},
 					Volumes: []v1.Volume{

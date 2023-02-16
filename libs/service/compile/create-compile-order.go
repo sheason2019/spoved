@@ -8,5 +8,5 @@ import (
 )
 
 func CreateCompileOrder(ctx context.Context, order *dao.CompileOrder) error {
-	return dbc.GetClient().WithContext(ctx).Save(order).Error
+	return dbc.DB.WithContext(ctx).Save(order).Error
 }

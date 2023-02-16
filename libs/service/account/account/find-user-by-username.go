@@ -10,7 +10,7 @@ import (
 )
 
 func FindUserByUsername(ctx context.Context, username string) (*dao.User, error) {
-	client := dbc.GetClient()
+	client := dbc.DB
 
 	user := &dao.User{
 		Username: username,

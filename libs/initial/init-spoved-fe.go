@@ -15,14 +15,9 @@ import (
 // 初始化前端Project
 func initSpovedFe(ctx context.Context, root *dao.User) error {
 	// 初始化Project
-	proj, exist, err := createSpovedFeProject(ctx, root)
+	proj, _, err := createSpovedFeProject(ctx, root)
 	if err != nil {
 		return errors.WithStack(err)
-	}
-
-	// 如果本地已经存在spoved-fe，则跳过对spoved-fe的初始化
-	if exist {
-		return nil
 	}
 
 	// 初始化Spoved-fe 的 Service

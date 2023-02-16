@@ -19,19 +19,17 @@ func CreateServiceByProject(ctx context.Context, proj *dao.Project) error {
 	}
 
 	serviceName := "service-proj-id-" + fmt.Sprint(proj.ID)
-
 	// 创建Selector
 	selector := meta_v1.LabelSelector{
 		MatchLabels: map[string]string{
 			"owner":       proj.Creator.Username,
-			"name":        serviceName,
 			"projectName": proj.ProjectName,
 		},
 	}
 
 	// 寻找指定的服务，判断是否已经启动
 	services, err := clientSet.CoreV1().Services("default").List(ctx, meta_v1.ListOptions{
-		LabelSelector: selector.String(),
+		LabelSelector: meta_v1.FormatLabelSelector(&selector),
 	})
 	if err != nil {
 		return err
@@ -52,7 +50,7 @@ func CreateServiceByProject(ctx context.Context, proj *dao.Project) error {
 	}
 
 	// 保存Project
-	return dbc.GetClient().WithContext(ctx).Save(proj).Error
+	return dbc.DB.WithContext(ctx).Save(proj).Error
 }
 
 func postService(ctx context.Context, svc *v1.Service) (*v1.Service, error) {

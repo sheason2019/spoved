@@ -11,7 +11,7 @@ import (
 )
 
 func FindCompileRecords(ctx context.Context, projectId int, pagination *common.Pagination) ([]dao.CompileOrder, int, error) {
-	client := dbc.GetClient()
+	client := dbc.DB
 
 	records := make([]dao.CompileOrder, 0)
 	err := client.WithContext(ctx).
@@ -39,12 +39,13 @@ func FindCompileRecords(ctx context.Context, projectId int, pagination *common.P
 }
 
 func FindLastOrderByProjectId(ctx context.Context, id int) (*dao.CompileOrder, error) {
-	client := dbc.GetClient()
+	client := dbc.DB
 
 	order := &dao.CompileOrder{}
 	err := client.WithContext(ctx).
-		InnerJoins("Project", client.Where(&dao.Project{Model: gorm.Model{ID: order.ID}})).
-		Order("created_at desc").
+		Joins("inner join projects on compile_orders.project_id = projects.id").
+		Where("projects.id = ?", id).
+		Order("compile_orders.created_at desc").
 		Limit(1).
 		Find(order).
 		Error

@@ -10,19 +10,19 @@ import (
 )
 
 func FindProject(ctx context.Context, username, projName string) (*dao.Project, error) {
-	client := dbc.GetClient()
+	client := dbc.DB
 
 	projDao := &dao.Project{}
 	err := client.WithContext(ctx).
+		Joins("inner join users on users.id = projects.creator_id").
 		Where("project_name = ?", projName).
-		InnerJoins("Users", client.Where(
-			&dao.User{Username: username}),
-		).
-		Limit(0).
+		Where("users.username = ?", username).
+		Preload("Creator").
+		Limit(1).
 		Find(projDao).
 		Error
 
-	if err == gorm.ErrRecordNotFound {
+	if err == gorm.ErrRecordNotFound || projDao.ID == 0 {
 		return nil, nil
 	}
 	if err != nil {

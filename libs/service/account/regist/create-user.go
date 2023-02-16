@@ -9,7 +9,7 @@ import (
 )
 
 func CreateUser(ctx context.Context, username, password, salt string) (*dao.User, error) {
-	client := dbc.GetClient()
+	client := dbc.DB
 	usr := &dao.User{
 		Username:     username,
 		PasswordHash: password,

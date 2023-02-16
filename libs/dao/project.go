@@ -16,9 +16,8 @@ type Project struct {
 	GitUrl      string
 	ServiceName string
 
-	CompileOrders []CompileOrder
-	DeployOrders  []DeployOrder
-	Creator       User `gorm:"foreignKey:CreatorID"`
+	CompileOrders []CompileOrder `gorm:"foreignKey:ProjectID"`
+	Creator       User           `gorm:"foreignKey:CreatorID"`
 	CreatorID     int
 }
 

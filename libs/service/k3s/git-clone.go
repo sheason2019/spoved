@@ -32,12 +32,12 @@ func GitClone(ctx context.Context, co *dao.CompileOrder) error {
 								{
 									Name:      "spoved-volumn",
 									MountPath: "/code",
-									SubPath:   "/repos/" + co.Project.Creator.Username + "/" + co.Project.ProjectName + "/" + co.Version,
+									SubPath:   "repos/" + co.Project.Creator.Username + "/" + co.Project.ProjectName + "/" + co.Version,
 								},
 								{
 									Name:      "spoved-volumn",
 									MountPath: "/root/.ssh",
-									SubPath:   "/account/" + co.Project.Creator.Username + "/.ssh",
+									SubPath:   "account/" + co.Project.Creator.Username + "/.ssh",
 								},
 							},
 						},

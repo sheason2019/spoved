@@ -8,5 +8,5 @@ import (
 )
 
 func CreateDeployOrder(ctx context.Context, do *dao.DeployOrder) error {
-	return dbc.GetClient().WithContext(ctx).Save(do).Error
+	return dbc.DB.WithContext(ctx).Save(do).Error
 }

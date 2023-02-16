@@ -11,7 +11,7 @@ import (
 
 // 根据用户名搜索项目
 func FindProjectsByUser(ctx context.Context, usr *dao.User, pagination *common.Pagination) ([]dao.Project, error) {
-	client := dbc.GetClient()
+	client := dbc.DB
 	projDaos := make([]dao.Project, 0)
 
 	err := client.WithContext(ctx).
