@@ -2,6 +2,7 @@ package compile_controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/idl-lib/compile"
 	"github.com/sheason2019/spoved/libs/middleware"
 	compile_service "github.com/sheason2019/spoved/libs/service/compile"
@@ -23,7 +24,14 @@ func (compileController) PostCompile(ctx *gin.Context, payload compile.CompileRe
 		panic(err)
 	}
 
-	order, err := compile_service.Compile(ctx, payload.Image, nv, payload.Branch, proj, currentUser)
+	order := &dao.CompileOrder{
+		Image:    payload.Image,
+		Version:  nv,
+		Branch:   payload.Branch,
+		Project:  *proj,
+		Operator: *currentUser,
+	}
+	err = compile_service.CreateCompileOrder(ctx, order)
 	if err != nil {
 		panic(err)
 	}

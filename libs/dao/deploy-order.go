@@ -58,8 +58,9 @@ func (do *DeployOrder) GenerateDeployment(deployName string) *appv1.Deployment {
 					ServiceAccountName: sa,
 					Containers: []v1.Container{
 						{
-							Name:  projName,
-							Image: do.Image,
+							Name:            projName,
+							Image:           do.Image,
+							ImagePullPolicy: "IfNotPresent",
 							Ports: []v1.ContainerPort{
 								{
 									ContainerPort: 80,

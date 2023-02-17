@@ -26,14 +26,31 @@ func initSpovedFe(ctx context.Context, root *dao.User) error {
 		return errors.WithStack(err)
 	}
 
-	// 执行编译逻辑
-	co, err := compile_service.Compile(ctx, "node:16-alpine", "0.0.1", "master", proj, root)
+	// 创建 Compile Order
+	co := &dao.CompileOrder{
+		Image:    "node:16-alpine",
+		Version:  "0.0.1",
+		Branch:   "test/build",
+		Project:  *proj,
+		Operator: *root,
+	}
+	err = compile_service.CreateCompileOrder(ctx, co)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	err = compile_service.CompileRun(ctx, co)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
 	// 执行部署逻辑，在k3s中为spoved-fe创建deployment
-	_, err = deploy_service.Deploy(ctx, root, co, "root/spoved-nginx")
+	do, err := deploy_service.CreateDeployOrderByCO(ctx, root, co, "root/spoved-nginx")
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	err = deploy_service.DeployRun(ctx, do)
 	if err != nil {
 		return errors.WithStack(err)
 	}

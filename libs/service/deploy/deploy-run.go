@@ -9,7 +9,7 @@ import (
 )
 
 // 部署逻辑执行
-func DeployRun(ctx context.Context, do *dao.DeployOrder) {
+func DeployRun(ctx context.Context, do *dao.DeployOrder) error {
 	// 创建Deployment
 	fmt.Println("创建Deployment")
 	err := k3s_service.Start(ctx, do)
@@ -17,5 +17,5 @@ func DeployRun(ctx context.Context, do *dao.DeployOrder) {
 		fmt.Println("error::", err)
 	}
 
-	// 获取record信息
+	return nil
 }

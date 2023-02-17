@@ -12,15 +12,7 @@ import (
 func Start(ctx context.Context, do *dao.DeployOrder) error {
 	deployment := do.GenerateDeployment("deployment-order-id-" + fmt.Sprint(do.ID))
 
-	deployment, err := clientSet.AppsV1().Deployments("default").Create(ctx, deployment, v1.CreateOptions{})
-	if err != nil {
-		return err
-	}
+	_, err := clientSet.AppsV1().Deployments("default").Create(ctx, deployment, v1.CreateOptions{})
 
-	deployCtx := DeployContext{
-		Context:    ctx,
-		Deployment: deployment,
-	}
-
-	return deployCtx.Wait()
+	return err
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/sheason2019/spoved/libs/dbc"
 )
 
-func Deploy(ctx context.Context, operator *dao.User, co *dao.CompileOrder, image string) (any, error) {
+func CreateDeployOrderByCO(ctx context.Context, operator *dao.User, co *dao.CompileOrder, image string) (*dao.DeployOrder, error) {
 	client := dbc.DB
 
 	deployDao := &dao.DeployOrder{
@@ -22,9 +22,6 @@ func Deploy(ctx context.Context, operator *dao.User, co *dao.CompileOrder, image
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-
-	// 执行部署逻辑
-	go DeployRun(ctx, deployDao)
 
 	return deployDao, nil
 }
