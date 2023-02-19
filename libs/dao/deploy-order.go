@@ -13,6 +13,9 @@ type DeployOrder struct {
 	Image      string
 	StatusCode int
 
+	// 构建时所指定的环境变量
+	Env map[string]string `gorm:"serializer:json"`
+
 	Operator   User `gorm:"foreignKey:OperatorID"`
 	OperatorID int
 
@@ -32,6 +35,23 @@ func (do *DeployOrder) GenerateDeployment(deployName string) *appv1.Deployment {
 	var bootCommand []string
 	if do.Image != "root/spoved-nginx" {
 		bootCommand = []string{"sh", "/code/start.sh"}
+	}
+
+	// 设置持久卷
+	// 将拉取并编译完成的代码挂载到/code目录下
+	volumeMounts := []v1.VolumeMount{
+		{
+			Name:      "spoved-volume",
+			MountPath: "/code",
+			SubPath:   "repos/" + userName + "/" + projName + "/" + do.CompileOrder.Version,
+		},
+	}
+	// 如果是Root用户，还需要将Spoved的相关数据挂载到/data目录下
+	if userName == "root" {
+		volumeMounts = append(volumeMounts, v1.VolumeMount{
+			Name:      "spoved-volume",
+			MountPath: "/data",
+		})
 	}
 
 	deployment := &appv1.Deployment{
@@ -66,19 +86,8 @@ func (do *DeployOrder) GenerateDeployment(deployName string) *appv1.Deployment {
 									ContainerPort: 80,
 								},
 							},
-							VolumeMounts: []v1.VolumeMount{
-								{
-									Name:      "spoved-volume",
-									MountPath: "/code",
-									SubPath:   "repos/" + userName + "/" + projName + "/" + do.CompileOrder.Version,
-								},
-								{
-									Name:      "spoved-volume",
-									MountPath: "/data",
-									SubPath:   "datas/" + userName + "/" + projName,
-								},
-							},
-							Command: bootCommand,
+							VolumeMounts: volumeMounts,
+							Command:      bootCommand,
 						},
 					},
 					Volumes: []v1.Volume{

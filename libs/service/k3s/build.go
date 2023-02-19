@@ -12,6 +12,15 @@ import (
 )
 
 func Build(ctx context.Context, co *dao.CompileOrder) error {
+	// 注入编译时的环境变量
+	envVar := []corev1.EnvVar{}
+	for name, value := range co.Env {
+		envVar = append(envVar, corev1.EnvVar{
+			Name:  name,
+			Value: value,
+		})
+	}
+
 	job := &batch_v1.Job{
 		ObjectMeta: v1.ObjectMeta{
 			Name: "compile-build-co-id-" + fmt.Sprint(co.ID),
@@ -27,10 +36,11 @@ func Build(ctx context.Context, co *dao.CompileOrder) error {
 						{
 							Name:    "git-clone-co-id-" + fmt.Sprint(co.ID),
 							Image:   co.Image,
+							Env:     envVar,
 							Command: []string{"sh", "/code/build.sh"},
 							VolumeMounts: []corev1.VolumeMount{
 								{
-									Name:      "spoved-volumn",
+									Name:      "spoved-volume",
 									MountPath: "/code",
 									SubPath:   "repos/" + co.Project.Creator.Username + "/" + co.Project.ProjectName + "/" + co.Version,
 								},
@@ -40,7 +50,7 @@ func Build(ctx context.Context, co *dao.CompileOrder) error {
 					RestartPolicy: "Never",
 					Volumes: []corev1.Volume{
 						{
-							Name: "spoved-volumn",
+							Name: "spoved-volume",
 							VolumeSource: corev1.VolumeSource{
 								PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 									ClaimName: "spoved-data-pvc",

@@ -18,6 +18,9 @@ type CompileOrder struct {
 	StatusCode int // 0表示执行中，1表示成功，-1表示失败
 	Branch     string
 
+	// 构建时所指定的环境变量
+	Env map[string]string `gorm:"serializer:json"`
+
 	Operator   User `gorm:"foreignKey:OperatorID"`
 	OperatorID int
 
@@ -25,11 +28,6 @@ type CompileOrder struct {
 	ProjectID int
 
 	DeployOrders []DeployOrder
-}
-
-// 构建产物镜像的名称
-func (order *CompileOrder) OutImageName() string {
-	return order.Operator.Username + "/" + order.Project.ProjectName + ":" + order.Version
 }
 
 type JobOptions struct {
@@ -42,8 +40,8 @@ type JobOptions struct {
 var defaultJobOption = JobOptions{
 	// 120s的超时时间
 	AtiveDeadlineSeconds: 120,
-	// 默认失败后不进行重试
-	BackoffLimit: 0,
+	// 默认失败后进行2次重试
+	BackoffLimit: 2,
 	// 完成Job需要执行的次数
 	Completions: 1,
 }

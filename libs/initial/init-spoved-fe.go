@@ -75,3 +75,5 @@ func createSpovedFeProject(ctx context.Context, root *dao.User) (proj *dao.Proje
 
 	return
 }
+
+func createSpovedFeCompileOrder(ctx context.Context, root *dao.User, proj *dao.Project) {}

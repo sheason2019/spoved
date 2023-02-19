@@ -6,24 +6,23 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
-	"gorm.io/gorm"
 )
 
 func FindUserByUsername(ctx context.Context, username string) (*dao.User, error) {
 	client := dbc.DB
 
-	user := &dao.User{
-		Username: username,
-	}
+	users := []dao.User{}
 
-	err := client.WithContext(ctx).Where(&user).Limit(1).Find(&user).Error
-	if err == gorm.ErrRecordNotFound {
+	err := client.WithContext(ctx).Where(&users).Limit(1).Find(&users).Error
+	if len(users) == 0 {
 		return nil, nil
 	}
 
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+
+	user := &users[0]
 
 	return user, nil
 }

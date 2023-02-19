@@ -14,15 +14,16 @@ import (
 func CreateSpovedIngress(ctx context.Context, proj *dao.Project) (*networking_v1.Ingress, error) {
 	pathType := networking_v1.PathTypePrefix
 
-	exist, err := clientSet.NetworkingV1().Ingresses("default").Get(ctx, "spoved-ingress", v1.GetOptions{})
-	if err != nil && !k8s_err.IsNotFound(err) {
-		return nil, errors.WithStack(err)
-	}
-	if exist != nil {
-		return exist, nil
+	ingress, err := clientSet.NetworkingV1().Ingresses("default").Get(ctx, "spoved-ingress", v1.GetOptions{})
+	if err != nil {
+		if !k8s_err.IsNotFound(err) {
+			return nil, errors.WithStack(err)
+		}
+	} else {
+		return ingress, nil
 	}
 
-	ingress := &networking_v1.Ingress{
+	ingress = &networking_v1.Ingress{
 		ObjectMeta: v1.ObjectMeta{
 			Name: "spoved-ingress",
 			Annotations: map[string]string{

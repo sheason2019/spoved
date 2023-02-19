@@ -12,6 +12,7 @@ import (
 var DB *gorm.DB
 
 func init() {
+	fmt.Println(env.DataRoot + "/spoved.db")
 	db, err := gorm.Open(sqlite.Open(env.DataRoot+"/spoved.db"), &gorm.Config{})
 	if err != nil {
 		panic(fmt.Errorf("数据库连接失败:%w", err))

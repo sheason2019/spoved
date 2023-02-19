@@ -31,19 +31,46 @@ func initSpoved(ctx context.Context, root *dao.User) error {
 		return errors.WithStack(err)
 	}
 
-	// 创建初始化时伪造的CompileOrder
-	co, err := createSpovedCompileOrder(ctx, root, proj)
+	// 创建CompileOrder
+	// 否则创建编译工单并执行编译
+	co := &dao.CompileOrder{
+		Image:      "golang:1.20.0-alpine3.17",
+		Version:    "0.0.1",
+		StatusCode: 1,
+		Branch:     "feat/auto-build",
+		Env: map[string]string{
+			"PRODUCT":    "true",
+			"BUILD_TYPE": "SPOVED",
+		},
+
+		Operator: *root,
+		Project:  *proj,
+	}
+
+	err = compile_service.CreateCompileOrder(ctx, co)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	// 创建初始化时伪造的DeployOrder
-	_, err = createSpovedDeployOrder(ctx, root, co)
+	err = compile_service.CompileRun(ctx, co)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	return nil
+	// 创建DeployOrder，并在k3s中构建Deployment
+	do := &dao.DeployOrder{
+		Image:        "golang:1.20.0-alpine3.17",
+		StatusCode:   1,
+		Operator:     *root,
+		CompileOrder: *co,
+	}
+
+	err = deploy_service.CreateDeployOrder(ctx, do)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return deploy_service.DeployRun(ctx, do)
 }
 
 func createSpovedProject(ctx context.Context, root *dao.User) (*dao.Project, error) {
@@ -60,53 +87,4 @@ func createSpovedProject(ctx context.Context, root *dao.User) (*dao.Project, err
 		ProjectName: "spoved",
 		GitUrl:      "https://github.com/sheason2019/spoved",
 	}, root)
-}
-
-// 创建伪造的 Spoved CompileOrder
-func createSpovedCompileOrder(ctx context.Context, root *dao.User, proj *dao.Project) (*dao.CompileOrder, error) {
-	// 如果已经存在CompileOrder，则表示目前是自举部署，这种情况下不必再伪造CompileOrder
-	lastCo, err := compile_service.FindLastOrderByProjectId(ctx, int(proj.ID))
-	if err != nil {
-		return nil, err
-	}
-	if lastCo != nil {
-		return lastCo, nil
-	}
-
-	order := &dao.CompileOrder{
-		Image:      "golang:1.20.0-alpine3.17",
-		Version:    "0.0.1",
-		StatusCode: 1,
-		Branch:     "master",
-
-		Operator: *root,
-		Project:  *proj,
-	}
-
-	err = compile_service.CreateCompileOrder(ctx, order)
-
-	return order, err
-}
-
-// 创建伪造的 Spoved DeployOrder
-func createSpovedDeployOrder(ctx context.Context, root *dao.User, co *dao.CompileOrder) (*dao.DeployOrder, error) {
-	// 如果已经存在DeployOrder，则表示目前是自举部署，这种情况下不必再伪造DeployOrder
-	lastDo, err := deploy_service.FindLastOrderByCompileOrderID(ctx, int(co.ID))
-	if err != nil {
-		return nil, err
-	}
-	if lastDo != nil {
-		return lastDo, nil
-	}
-
-	do := &dao.DeployOrder{
-		Image:        co.OutImageName(),
-		StatusCode:   1,
-		Operator:     *root,
-		CompileOrder: *co,
-	}
-
-	err = deploy_service.CreateDeployOrder(ctx, do)
-
-	return do, err
 }

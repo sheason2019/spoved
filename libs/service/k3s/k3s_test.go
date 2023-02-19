@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/sheason2019/spoved/libs/dao"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -17,4 +18,14 @@ func TestGitClone(t *testing.T) {
 	}
 
 	fmt.Printf("job %+v", job.Status.Conditions)
+}
+
+func TestCreateIngress(t *testing.T) {
+	ingress, err := CreateSpovedIngress(context.TODO(), &dao.Project{})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	fmt.Println(ingress)
 }

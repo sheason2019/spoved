@@ -28,9 +28,24 @@ func (ctx *JobContext) Wait() error {
 
 		fmt.Printf("Status %+v\n", job.Status)
 
-		if job.Status.Succeeded+job.Status.Failed >= *job.Spec.Completions {
+		// 成功数达到预期值时结束监听
+		if job.Status.Succeeded >= *job.Spec.Completions {
+			break
+		}
+		// 超出失败重试次数时结束监听
+		if job.Status.Failed > *job.Spec.BackoffLimit {
 			break
 		}
 	}
-	return nil
+
+	if ctx.Job.Status.Succeeded == *ctx.Job.Spec.Completions {
+		return nil
+	} else {
+		return fmt.Errorf(
+			"error: Job Completions: %d, Job Succeeded: %d, Job Failed: %d",
+			*ctx.Job.Spec.Completions,
+			ctx.Job.Status.Succeeded,
+			ctx.Job.Status.Failed,
+		)
+	}
 }

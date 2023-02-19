@@ -6,18 +6,12 @@ import (
 
 	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
-	project_service "github.com/sheason2019/spoved/libs/service/project"
 	v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func CreateServiceByProject(ctx context.Context, proj *dao.Project) error {
-	// 若Project已存在，则不再进行创建
-	proj, err := project_service.FindProject(ctx, proj.Creator.Username, proj.ProjectName)
-	if err != nil {
-		return err
-	}
-
+	// 根据Project的信息对Service名称进行初始化
 	serviceName := "service-proj-id-" + fmt.Sprint(proj.ID)
 	// 创建Selector
 	selector := meta_v1.LabelSelector{
