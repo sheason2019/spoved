@@ -4,29 +4,30 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/sheason2019/spoved/ent"
-	"github.com/sheason2019/spoved/ent/project"
-	"github.com/sheason2019/spoved/ent/user"
+	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
+	"gorm.io/gorm"
 )
 
-func FindProject(username, projName string) (*ent.Project, error) {
-	client := dbc.GetClient()
+func FindProject(ctx context.Context, username, projName string) (*dao.Project, error) {
+	client := dbc.DB
 
-	proj, err := client.Project.Query().
-		Where(
-			project.ProjectNameEQ(projName),
-			project.HasCreatorWith(
-				user.UsernameEQ(username),
-			),
-		).
-		First(context.Background())
-	if ent.IsNotFound(err) {
-		return nil, errors.WithStack(errors.New("未找到指定的项目" + `/` + username + `/` + projName))
+	projDao := &dao.Project{}
+	err := client.WithContext(ctx).
+		Joins("inner join users on users.id = projects.creator_id").
+		Where("project_name = ?", projName).
+		Where("users.username = ?", username).
+		Preload("Creator").
+		Limit(1).
+		Find(projDao).
+		Error
+
+	if err == gorm.ErrRecordNotFound || projDao.ID == 0 {
+		return nil, nil
 	}
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	return proj, nil
+	return projDao, nil
 }

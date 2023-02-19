@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http/httputil"
 	"net/url"
 
@@ -9,6 +10,7 @@ import (
 	compile_controller "github.com/sheason2019/spoved/libs/controller/compile"
 	project_controller "github.com/sheason2019/spoved/libs/controller/project"
 	"github.com/sheason2019/spoved/libs/middleware"
+	project_service "github.com/sheason2019/spoved/libs/service/project"
 )
 
 func SetupRouter() *gin.Engine {
@@ -28,13 +30,17 @@ func SetupRouter() *gin.Engine {
 	}
 
 	// 路由网关
-	r.GET("/proxy", func(ctx *gin.Context) {})
+	r.Any("/proxy", func(ctx *gin.Context) {})
 
 	// 前端反向代理
-	target := "http://root--spoved-fe-service"
-	proxyUrl, _ := url.Parse(target)
-	rp := httputil.NewSingleHostReverseProxy(proxyUrl)
-	r.GET("/", func(ctx *gin.Context) {
+	r.NoRoute(func(ctx *gin.Context) {
+		proj, err := project_service.FindProject(ctx, "root", "spoved-fe")
+		if err != nil {
+			panic(err)
+		}
+
+		proxyUrl, _ := url.Parse(fmt.Sprintf("http://%s", proj.ServiceName))
+		rp := httputil.NewSingleHostReverseProxy(proxyUrl)
 		rp.ServeHTTP(ctx.Writer, ctx.Request)
 	})
 

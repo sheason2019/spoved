@@ -1,6 +1,7 @@
 package regist_service
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 
@@ -10,9 +11,9 @@ import (
 )
 
 // 检测用户的注册信息是否合法
-func RegistValidate(accountInfo *account.AccountInfo) error {
+func RegistValidate(ctx context.Context, accountInfo *account.AccountInfo) error {
 	// 检查用户名是否重复
-	usr, e := account_service.FindUserByUsername(accountInfo.Username)
+	usr, e := account_service.FindUserByUsername(ctx, accountInfo.Username)
 	if e != nil {
 		return e
 	}

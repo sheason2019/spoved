@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/sheason2019/spoved/ent"
+	"github.com/sheason2019/spoved/libs/dao"
 	login_service "github.com/sheason2019/spoved/libs/service/account/login"
 )
 
 func TestJwt(t *testing.T) {
-	usr := ent.User{
+	usr := dao.User{
 		Username:     "sheason",
 		PasswordHash: "password_hash",
 		PasswordSalt: "password_salt",

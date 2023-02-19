@@ -1,9 +1,7 @@
 FROM golang:1.20.0-alpine3.17
 
-WORKDIR /code
+WORKDIR /app
 
-COPY . .
+COPY ./dist/spoved ./dist/spoved
 
-RUN sh build.sh
-
-ENTRYPOINT [ "/code/spoved" ]
+ENTRYPOINT [ "/app/dist/spoved" ]

@@ -1,28 +1,22 @@
 package transfer
 
 import (
-	"context"
-
-	"github.com/sheason2019/spoved/ent"
+	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/idl-lib/project"
 )
 
-func ProjectToIdl(proj *ent.Project) project.Project {
-	target := project.Project{
-		Id:          proj.ID,
+func ProjectToIdl(proj *dao.Project) *project.Project {
+	return &project.Project{
+		Id:          int(proj.ID),
 		ProjectName: proj.ProjectName,
-		GitUrl:      proj.GitURL,
+		GitUrl:      proj.GitUrl,
 		Describe:    proj.Describe,
+		Owner:       proj.Creator.Username,
 	}
-
-	creator := proj.QueryCreator().FirstX(context.Background())
-	target.Owner = creator.Username
-
-	return target
 }
 
-func ProjectsToIdl(projs []*ent.Project) []project.Project {
-	targets := make([]project.Project, len(projs))
+func ProjectsToIdl(projs []*dao.Project) []*project.Project {
+	targets := make([]*project.Project, len(projs))
 	for i, v := range projs {
 		targets[i] = ProjectToIdl(v)
 	}

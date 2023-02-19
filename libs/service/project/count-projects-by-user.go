@@ -4,22 +4,20 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/sheason2019/spoved/ent"
-	"github.com/sheason2019/spoved/ent/project"
-	"github.com/sheason2019/spoved/ent/user"
+	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
 )
 
-func CountProjectsByUser(usr *ent.User) (int, error) {
-	client := dbc.GetClient()
+func CountProjectsByUser(ctx context.Context, usr *dao.User) (int64, error) {
+	client := dbc.DB
 
-	count, err := client.Project.Query().
-		Where(
-			project.HasCreatorWith(
-				user.IDEQ(usr.ID),
-			),
-		).
-		Count(context.Background())
+	var count int64
+	err := client.WithContext(ctx).
+		Model(&dao.Project{}).
+		Where("CreatorID = ?", usr.ID).
+		Count(&count).
+		Error
+
 	if err != nil {
 		return 0, errors.WithStack(err)
 	}

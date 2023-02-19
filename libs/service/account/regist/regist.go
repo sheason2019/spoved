@@ -1,23 +1,17 @@
 package regist_service
 
 import (
-	"github.com/sheason2019/spoved/ent"
-	"github.com/sheason2019/spoved/libs/idl-lib/account"
-	"github.com/sheason2019/spoved/libs/service/account/password"
+	"context"
+
+	"github.com/sheason2019/spoved/libs/dao"
+	password_service "github.com/sheason2019/spoved/libs/service/account/password"
 )
 
-func Regist(accountInfo *account.AccountInfo) (*ent.User, error) {
-	// 将用户上传的PWD解析成明文
-	password.DecodePassword(accountInfo)
-	// 校验用户的输入信息是否合规
-	e := RegistValidate(accountInfo)
-	if e != nil {
-		return nil, e
-	}
-	// 然后将用户输入的密码转换为Salt+Hash
-	cipherPwd, salt := password.EncodePassword(accountInfo.Password)
+func Regist(ctx context.Context, username, password string) (*dao.User, error) {
+	// 将用户的密文密码转换为Salt+Hash的组合
+	cipherPwd, salt := password_service.EncodePassword(password)
 	// 创建用户
-	usr, e := CreateUser(accountInfo.Username, cipherPwd, salt)
+	usr, e := CreateUser(ctx, username, cipherPwd, salt)
 	if e != nil {
 		return nil, e
 	}

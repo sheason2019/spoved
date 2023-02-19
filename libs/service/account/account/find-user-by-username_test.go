@@ -1,6 +1,7 @@
 package account_service_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
@@ -9,7 +10,7 @@ import (
 
 func TestExist(t *testing.T) {
 	name := "sheason"
-	usr, e := account_service.FindUserByUsername(name)
+	usr, e := account_service.FindUserByUsername(context.TODO(), name)
 	if e != nil {
 		t.Errorf("%+v", e)
 	}
@@ -18,7 +19,7 @@ func TestExist(t *testing.T) {
 
 func TestNotExist(t *testing.T) {
 	name := "sheason2020"
-	usr, e := account_service.FindUserByUsername(name)
+	usr, e := account_service.FindUserByUsername(context.TODO(), name)
 	if usr == nil {
 		return
 	}

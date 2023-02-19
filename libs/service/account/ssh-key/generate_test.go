@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/sheason2019/spoved/ent"
+	"github.com/sheason2019/spoved/libs/dao"
 	ssh_key "github.com/sheason2019/spoved/libs/service/account/ssh-key"
 )
 
-var usr = ent.User{
+var usr = dao.User{
 	Username: "sheason",
 }
 

@@ -13,6 +13,6 @@ func init() {
 	if !IS_PRODUCT {
 		DataRoot = path.Dir(path.Dir(path.Dir(filename))) + "/data"
 	} else {
-		DataRoot = "/var/spoved/data"
+		DataRoot = "/data"
 	}
 }

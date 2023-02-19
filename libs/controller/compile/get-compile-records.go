@@ -20,7 +20,7 @@ func (compileController) GetCompileRecords(ctx *gin.Context, payload compile.Get
 	records := make([]compile.CompileRecord, len(entRecords))
 
 	for i, entRecord := range entRecords {
-		records[i] = *transfer.CompileRecordToIdl(ctx, entRecord)
+		records[i] = *transfer.CompileRecordToIdl(&entRecord)
 	}
 
 	return compile.GetCompileRecordsResponse{

@@ -4,24 +4,25 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/sheason2019/spoved/ent"
-	"github.com/sheason2019/spoved/ent/user"
+	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
 )
 
-func FindUserByUsername(username string) (*ent.User, error) {
-	client := dbc.GetClient()
+func FindUserByUsername(ctx context.Context, username string) (*dao.User, error) {
+	client := dbc.DB
 
-	user, err := client.User.
-		Query().
-		Where(user.UsernameEQ(username)).
-		First(context.Background())
-	if ent.IsNotFound(err) {
+	users := []dao.User{}
+
+	err := client.WithContext(ctx).Where(&users).Limit(1).Find(&users).Error
+	if len(users) == 0 {
 		return nil, nil
 	}
+
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+
+	user := &users[0]
 
 	return user, nil
 }

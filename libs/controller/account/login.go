@@ -8,7 +8,7 @@ import (
 )
 
 func (AccountController) Login(c *gin.Context, info account.AccountInfo) account.LoginResponse {
-	token, e := login_service.Login(&info)
+	token, e := login_service.Login(c, &info)
 	if e != nil {
 		panic(e)
 	}

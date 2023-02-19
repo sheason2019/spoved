@@ -11,7 +11,7 @@ import (
 )
 
 func (ProjectController) GetProject(ctx *gin.Context, payload project.GetProjectPayload) project.Project {
-	proj, e := project_service.FindProject(payload.Username, payload.ProjectName)
+	proj, e := project_service.FindProject(ctx, payload.Username, payload.ProjectName)
 	if e != nil {
 		panic(e)
 	}
@@ -19,7 +19,7 @@ func (ProjectController) GetProject(ctx *gin.Context, payload project.GetProject
 		panic(errors.New("指定的Project不存在"))
 	}
 
-	return transfer.ProjectToIdl(proj)
+	return *transfer.ProjectToIdl(proj)
 }
 
 func bindGetProject(r gin.IRoutes) {
