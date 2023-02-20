@@ -7,7 +7,6 @@ import (
 	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
 	"github.com/sheason2019/spoved/libs/idl-lib/common"
-	"gorm.io/gorm"
 )
 
 func FindCompileRecords(ctx context.Context, projectId int, pagination *common.Pagination) ([]dao.CompileOrder, int, error) {
@@ -16,7 +15,8 @@ func FindCompileRecords(ctx context.Context, projectId int, pagination *common.P
 	records := make([]dao.CompileOrder, 0)
 	err := client.WithContext(ctx).
 		Model(&records).
-		InnerJoins("Project", client.Where(&dao.Project{Model: gorm.Model{ID: uint(projectId)}})).
+		Joins("inner join projects on compile_orders.project_id = projects.id").
+		Where("projects.id = ?", projectId).
 		Offset((pagination.Page - 1) * pagination.PageSize).
 		Limit(pagination.PageSize).
 		Find(&records).
@@ -28,7 +28,8 @@ func FindCompileRecords(ctx context.Context, projectId int, pagination *common.P
 	var count int64
 	err = client.WithContext(ctx).
 		Model(&records).
-		InnerJoins("Project", client.Where(&dao.Project{Model: gorm.Model{ID: uint(projectId)}})).
+		Joins("inner join projects on compile_orders.project_id = projects.id").
+		Where("projects.id = ?", projectId).
 		Count(&count).
 		Error
 	if err != nil {
@@ -41,21 +42,21 @@ func FindCompileRecords(ctx context.Context, projectId int, pagination *common.P
 func FindLastOrderByProjectId(ctx context.Context, id int) (*dao.CompileOrder, error) {
 	client := dbc.DB
 
-	order := &dao.CompileOrder{}
+	orders := make([]dao.CompileOrder, 0)
 	err := client.WithContext(ctx).
 		Joins("inner join projects on compile_orders.project_id = projects.id").
 		Where("projects.id = ?", id).
 		Order("compile_orders.created_at desc").
 		Limit(1).
-		Find(order).
+		Find(&orders).
 		Error
 
-	if err == gorm.ErrRecordNotFound {
-		return nil, nil
-	}
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+	if len(orders) == 0 {
+		return nil, nil
+	}
 
-	return order, nil
+	return &orders[0], nil
 }

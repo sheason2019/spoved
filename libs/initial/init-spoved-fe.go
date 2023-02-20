@@ -26,10 +26,14 @@ func initSpovedFe(ctx context.Context, root *dao.User) error {
 		return errors.WithStack(err)
 	}
 
+	version, err := compile_service.FindNextVersionForProject(ctx, int(proj.ID), "Patch")
+	if err != nil {
+		return errors.WithStack(err)
+	}
 	// 创建 Compile Order
 	co := &dao.CompileOrder{
 		Image:    "node:16-alpine",
-		Version:  "0.0.1",
+		Version:  version,
 		Branch:   init_branch,
 		Project:  *proj,
 		Operator: *root,

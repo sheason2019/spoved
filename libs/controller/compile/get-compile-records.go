@@ -9,7 +9,7 @@ import (
 )
 
 func (compileController) GetCompileRecords(ctx *gin.Context, payload compile.GetCompileRecordsPayload) compile.GetCompileRecordsResponse {
-	entRecords, count, err := compile_service.FindCompileRecords(ctx, payload.ProjectId, &payload.Pagination)
+	recordDaos, count, err := compile_service.FindCompileRecords(ctx, payload.ProjectId, &payload.Pagination)
 	if err != nil {
 		panic(err)
 	}
@@ -17,10 +17,10 @@ func (compileController) GetCompileRecords(ctx *gin.Context, payload compile.Get
 	pagination := payload.Pagination
 	pagination.ItemCounts = count
 
-	records := make([]compile.CompileRecord, len(entRecords))
+	records := make([]compile.CompileRecord, len(recordDaos))
 
-	for i, entRecord := range entRecords {
-		records[i] = *transfer.CompileRecordToIdl(&entRecord)
+	for i, recordDao := range recordDaos {
+		records[i] = *transfer.CompileRecordToIdl(&recordDao)
 	}
 
 	return compile.GetCompileRecordsResponse{

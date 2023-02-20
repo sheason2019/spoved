@@ -31,11 +31,15 @@ func initSpoved(ctx context.Context, root *dao.User) error {
 		return errors.WithStack(err)
 	}
 
+	version, err := compile_service.FindNextVersionForProject(ctx, int(proj.ID), "Patch")
+	if err != nil {
+		return errors.WithStack(err)
+	}
 	// 创建CompileOrder
 	// 否则创建编译工单并执行编译
 	co := &dao.CompileOrder{
 		Image:      "golang:1.20.0-alpine3.17",
-		Version:    "0.0.1",
+		Version:    version,
 		StatusCode: 1,
 		Branch:     init_branch,
 		Env: map[string]string{
