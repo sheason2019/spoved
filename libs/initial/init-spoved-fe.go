@@ -30,7 +30,7 @@ func initSpovedFe(ctx context.Context, root *dao.User) error {
 	co := &dao.CompileOrder{
 		Image:    "node:16-alpine",
 		Version:  "0.0.1",
-		Branch:   "test/build",
+		Branch:   init_branch,
 		Project:  *proj,
 		Operator: *root,
 	}

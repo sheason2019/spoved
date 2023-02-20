@@ -14,7 +14,7 @@ func CountProjectsByUser(ctx context.Context, usr *dao.User) (int64, error) {
 	var count int64
 	err := client.WithContext(ctx).
 		Model(&dao.Project{}).
-		Where("CreatorID = ?", usr.ID).
+		Where("creator_id = ?", usr.ID).
 		Count(&count).
 		Error
 

@@ -37,7 +37,7 @@ func initSpoved(ctx context.Context, root *dao.User) error {
 		Image:      "golang:1.20.0-alpine3.17",
 		Version:    "0.0.1",
 		StatusCode: 1,
-		Branch:     "feat/auto-build",
+		Branch:     init_branch,
 		Env: map[string]string{
 			"PRODUCT":    "true",
 			"BUILD_TYPE": "SPOVED",

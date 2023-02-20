@@ -13,7 +13,7 @@ func FindUserByUsername(ctx context.Context, username string) (*dao.User, error)
 
 	users := []dao.User{}
 
-	err := client.WithContext(ctx).Where(&users).Limit(1).Find(&users).Error
+	err := client.WithContext(ctx).Where("username = ?", username).Limit(1).Find(&users).Error
 	if len(users) == 0 {
 		return nil, nil
 	}

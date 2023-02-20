@@ -9,7 +9,7 @@ import (
 )
 
 func TestExist(t *testing.T) {
-	name := "sheason"
+	name := "root"
 	usr, e := account_service.FindUserByUsername(context.TODO(), name)
 	if e != nil {
 		t.Errorf("%+v", e)

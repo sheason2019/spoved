@@ -16,12 +16,7 @@ import (
 // 初始化根用户
 func initRootUser(ctx context.Context) (root *dao.User, err error) {
 	// 初始化根用户后在Stdout中展示根用户密码
-	defer func() {
-		err := showPassword()
-		if err != nil {
-			panic(fmt.Errorf("get root password failure: %w", err))
-		}
-	}()
+	defer ShowPassword()
 
 	root, err = account_service.FindUserByUsername(ctx, "root")
 	if err != nil {
@@ -48,12 +43,14 @@ func createRootUser(ctx context.Context) (*dao.User, error) {
 	return rootUser, nil
 }
 
-func showPassword() error {
+func ShowPassword() {
+	fmt.Println("ROOT PASSWORD: " + GetRootPassword())
+}
+
+func GetRootPassword() string {
 	pwd, err := os.ReadFile(env.DataRoot + "/ROOT_PASSWORD")
 	if err != nil {
-		return err
+		panic(fmt.Errorf("get root password failure: %w", err))
 	}
-
-	fmt.Println("ROOT PASSWORD: " + string(pwd))
-	return nil
+	return string(pwd)
 }

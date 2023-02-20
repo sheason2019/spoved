@@ -16,6 +16,7 @@ func FindProjectsByUser(ctx context.Context, usr *dao.User, pagination *common.P
 
 	err := client.WithContext(ctx).
 		Where("creator_id = ?", usr.ID).
+		Preload("Creator").
 		Offset((pagination.Page - 1) * pagination.PageSize).
 		Limit(pagination.PageSize).
 		Find(&projDaos).
