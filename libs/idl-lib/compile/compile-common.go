@@ -17,8 +17,9 @@ type CompileRecord struct {
 }
 
 type GetCompileRecordsPayload struct {
-	ProjectId  int               `json:"projectId" form:"projectId"`
-	Pagination common.Pagination `json:"pagination" form:"pagination"`
+	ProjectId int `json:"projectId" form:"projectId"`
+	Page      int `json:"page" form:"page"`
+	PageSize  int `json:"pageSize" form:"pageSize"`
 }
 
 type GetCompileRecordsResponse struct {

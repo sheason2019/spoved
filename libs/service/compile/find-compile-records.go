@@ -6,10 +6,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
-	"github.com/sheason2019/spoved/libs/idl-lib/common"
 )
 
-func FindCompileRecords(ctx context.Context, projectId int, pagination *common.Pagination) ([]dao.CompileOrder, int, error) {
+func FindCompileRecords(ctx context.Context, projectId int, page, pageSize int) ([]dao.CompileOrder, int, error) {
 	client := dbc.DB
 
 	records := make([]dao.CompileOrder, 0)
@@ -17,8 +16,8 @@ func FindCompileRecords(ctx context.Context, projectId int, pagination *common.P
 		Model(&records).
 		Joins("inner join projects on compile_orders.project_id = projects.id").
 		Where("projects.id = ?", projectId).
-		Offset((pagination.Page - 1) * pagination.PageSize).
-		Limit(pagination.PageSize).
+		Offset((page - 1) * pageSize).
+		Limit(pageSize).
 		Find(&records).
 		Error
 	if err != nil {

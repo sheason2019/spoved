@@ -1,7 +1,7 @@
 {
   "remote": {
     "repository": "https://github.com/sheason2019/spoved-idl.git",
-    "branch": "feat/login",
+    "branch": "develop",
     "outDir": "./idl-repo"
   },
   "configs": [
