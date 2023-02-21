@@ -8,7 +8,7 @@ import (
 	"github.com/sheason2019/spoved/libs/dbc"
 )
 
-func FindCompileRecords(ctx context.Context, projectId int, page, pageSize int) ([]dao.CompileOrder, int, error) {
+func FindCompileOrders(ctx context.Context, projectId int, page, pageSize int) ([]dao.CompileOrder, int, error) {
 	client := dbc.DB
 
 	records := make([]dao.CompileOrder, 0)

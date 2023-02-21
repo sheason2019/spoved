@@ -5,15 +5,15 @@ import (
 )
 
 type CompileApi interface {
-	PostCompile(ctx *gin.Context, payload CompileRecord) CompileRecord
-	GetCompileRecords(ctx *gin.Context, payload GetCompileRecordsPayload) GetCompileRecordsResponse
+	PostCompileOrder(ctx *gin.Context, payload CompileOrder) CompileOrder
+	GetCompileOrders(ctx *gin.Context, payload GetCompileOrdersPayload) GetCompileOrdersResponse
 }
 type _compileApiDefinition struct {
-	POST_COMPILE_PATH        string
-	GET_COMPILE_RECORDS_PATH string
+	POST_COMPILE_ORDER_PATH string
+	GET_COMPILE_ORDERS_PATH string
 }
 
 var CompileApiDefinition = _compileApiDefinition{
-	POST_COMPILE_PATH:        "/CompileApi.Compile",
-	GET_COMPILE_RECORDS_PATH: "/CompileApi.CompileRecords",
+	POST_COMPILE_ORDER_PATH: "/CompileApi.CompileOrder",
+	GET_COMPILE_ORDERS_PATH: "/CompileApi.CompileOrders",
 }

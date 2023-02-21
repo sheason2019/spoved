@@ -11,7 +11,7 @@ import (
 )
 
 // 创建编译工单
-func (compileController) PostCompile(ctx *gin.Context, payload compile.CompileRecord) compile.CompileRecord {
+func (compileController) PostCompileOrder(ctx *gin.Context, payload compile.CompileOrder) compile.CompileOrder {
 	currentUser := middleware.MustGetCurrentUser(ctx)
 
 	proj, err := project_service.FindProjectById(ctx, payload.ProjectId)
@@ -36,12 +36,12 @@ func (compileController) PostCompile(ctx *gin.Context, payload compile.CompileRe
 		panic(err)
 	}
 
-	return *transfer.CompileRecordToIdl(order)
+	return *transfer.CompileOrderToIdl(order)
 }
 
 func bindPostCompile(r gin.IRoutes) {
-	r.POST(compile.CompileApiDefinition.POST_COMPILE_PATH, func(ctx *gin.Context) {
-		props := middleware.GetProps[compile.CompileRecord](ctx)
-		ctx.JSON(200, cc.PostCompile(ctx, *props))
+	r.POST(compile.CompileApiDefinition.POST_COMPILE_ORDER_PATH, func(ctx *gin.Context) {
+		props := middleware.GetProps[compile.CompileOrder](ctx)
+		ctx.JSON(200, cc.PostCompileOrder(ctx, *props))
 	})
 }

@@ -5,8 +5,8 @@ import (
 	"github.com/sheason2019/spoved/libs/idl-lib/compile"
 )
 
-func CompileRecordToIdl(co *dao.CompileOrder) *compile.CompileRecord {
-	record := compile.CompileRecord{}
+func CompileOrderToIdl(co *dao.CompileOrder) *compile.CompileOrder {
+	record := compile.CompileOrder{}
 
 	record.Id = int(co.ID)
 	record.Branch = co.Branch

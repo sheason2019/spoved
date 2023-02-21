@@ -11,5 +11,5 @@ var cc compile.CompileApi = compileController{}
 
 func BindController(r gin.IRoutes) {
 	bindPostCompile(r)
-	bindGetCompileRecords(r)
+	bindGetCompileOrders(r)
 }

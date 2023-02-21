@@ -9,8 +9,8 @@ import (
 	"github.com/sheason2019/spoved/libs/transfer"
 )
 
-func (compileController) GetCompileRecords(ctx *gin.Context, payload compile.GetCompileRecordsPayload) compile.GetCompileRecordsResponse {
-	recordDaos, count, err := compile_service.FindCompileRecords(ctx, payload.ProjectId, payload.Page, payload.PageSize)
+func (compileController) GetCompileOrders(ctx *gin.Context, payload compile.GetCompileOrdersPayload) compile.GetCompileOrdersResponse {
+	recordDaos, count, err := compile_service.FindCompileOrders(ctx, payload.ProjectId, payload.Page, payload.PageSize)
 	if err != nil {
 		panic(err)
 	}
@@ -21,21 +21,21 @@ func (compileController) GetCompileRecords(ctx *gin.Context, payload compile.Get
 		ItemCounts: count,
 	}
 
-	records := make([]compile.CompileRecord, len(recordDaos))
+	records := make([]compile.CompileOrder, len(recordDaos))
 
 	for i, recordDao := range recordDaos {
-		records[i] = *transfer.CompileRecordToIdl(&recordDao)
+		records[i] = *transfer.CompileOrderToIdl(&recordDao)
 	}
 
-	return compile.GetCompileRecordsResponse{
+	return compile.GetCompileOrdersResponse{
 		Records:    records,
 		Pagination: pagination,
 	}
 }
 
-func bindGetCompileRecords(r gin.IRoutes) {
-	r.GET(compile.CompileApiDefinition.GET_COMPILE_RECORDS_PATH, func(ctx *gin.Context) {
-		props := middleware.GetProps[compile.GetCompileRecordsPayload](ctx)
-		ctx.JSON(200, cc.GetCompileRecords(ctx, *props))
+func bindGetCompileOrders(r gin.IRoutes) {
+	r.GET(compile.CompileApiDefinition.GET_COMPILE_ORDERS_PATH, func(ctx *gin.Context) {
+		props := middleware.GetProps[compile.GetCompileOrdersPayload](ctx)
+		ctx.JSON(200, cc.GetCompileOrders(ctx, *props))
 	})
 }

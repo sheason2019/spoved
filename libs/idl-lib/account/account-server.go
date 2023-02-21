@@ -13,19 +13,19 @@ type AccountApi interface {
 	GetSshPubKey(ctx *gin.Context) GetSshPubKeyResponse
 }
 type _accountApiDefinition struct {
-	GET_ACCOUNT_CRYPTO_PATH  string
 	LOGIN_PATH               string
 	REGIST_PATH              string
 	GET_USERNAME_REPEAT_PATH string
 	GET_CURRENT_USER_PATH    string
 	GET_SSH_PUB_KEY_PATH     string
+	GET_ACCOUNT_CRYPTO_PATH  string
 }
 
 var AccountApiDefinition = _accountApiDefinition{
-	GET_ACCOUNT_CRYPTO_PATH:  "/AccountApi.AccountCrypto",
 	LOGIN_PATH:               "/AccountApi.Login",
 	REGIST_PATH:              "/AccountApi.Regist",
 	GET_USERNAME_REPEAT_PATH: "/AccountApi.UsernameRepeat",
 	GET_CURRENT_USER_PATH:    "/AccountApi.CurrentUser",
 	GET_SSH_PUB_KEY_PATH:     "/AccountApi.SshPubKey",
+	GET_ACCOUNT_CRYPTO_PATH:  "/AccountApi.AccountCrypto",
 }
