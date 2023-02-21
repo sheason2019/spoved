@@ -1,5 +1,9 @@
 package account
 
+type GetUsernameRepeatPayload struct {
+	Name string `json:"name" form:"name"`
+}
+
 type GetSshPubKeyResponse struct {
 	PubKey string `json:"pubKey" form:"pubKey"`
 }
@@ -25,8 +29,4 @@ type LoginResponse struct {
 
 type GetUsernameRepeatResponse struct {
 	Repeat bool `json:"repeat" form:"repeat"`
-}
-
-type GetUsernameRepeatPayload struct {
-	Name string `json:"name" form:"name"`
 }

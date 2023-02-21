@@ -5,12 +5,12 @@ import (
 )
 
 type DeployApi interface {
-	GetCompileOrders(ctx *gin.Context, payload GetCompileOrdersPayload) GetCompileOrdersResponse
+	GetDeployOrders(ctx *gin.Context, payload GetDeployOrdersPayload) GetDeployOrdersResponse
 }
 type _deployApiDefinition struct {
-	GET_COMPILE_ORDERS_PATH string
+	GET_DEPLOY_ORDERS_PATH string
 }
 
 var DeployApiDefinition = _deployApiDefinition{
-	GET_COMPILE_ORDERS_PATH: "/DeployApi.CompileOrders",
+	GET_DEPLOY_ORDERS_PATH: "/DeployApi.DeployOrders",
 }

@@ -14,8 +14,8 @@ func FindCompileOrders(ctx context.Context, projectId int, page, pageSize int) (
 	records := make([]dao.CompileOrder, 0)
 	err := client.WithContext(ctx).
 		Model(&records).
-		Joins("inner join projects on compile_orders.project_id = projects.id").
-		Where("projects.id = ?", projectId).
+		Joins("Project", client.Where("Project.id = ?", projectId)).
+		Preload("Operator").
 		Offset((page - 1) * pageSize).
 		Limit(pageSize).
 		Find(&records).
@@ -27,8 +27,7 @@ func FindCompileOrders(ctx context.Context, projectId int, page, pageSize int) (
 	var count int64
 	err = client.WithContext(ctx).
 		Model(&records).
-		Joins("inner join projects on compile_orders.project_id = projects.id").
-		Where("projects.id = ?", projectId).
+		Joins("Project", client.Where("Project.id = ?", projectId)).
 		Count(&count).
 		Error
 	if err != nil {
@@ -43,8 +42,8 @@ func FindLastOrderByProjectId(ctx context.Context, id int) (*dao.CompileOrder, e
 
 	orders := make([]dao.CompileOrder, 0)
 	err := client.WithContext(ctx).
-		Joins("inner join projects on compile_orders.project_id = projects.id").
-		Where("projects.id = ?", id).
+		Preload("Operator").
+		Preload("Project", client.Where("id = ?", id)).
 		Order("compile_orders.created_at desc").
 		Limit(1).
 		Find(&orders).

@@ -1,6 +1,8 @@
 package compile_controller
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sheason2019/spoved/libs/idl-lib/common"
 	"github.com/sheason2019/spoved/libs/idl-lib/compile"
@@ -10,6 +12,11 @@ import (
 )
 
 func (compileController) GetCompileOrders(ctx *gin.Context, payload compile.GetCompileOrdersPayload) compile.GetCompileOrdersResponse {
+	fmt.Printf("payload: %+v\n", payload)
+	if payload.ProjectId == 0 {
+		panic("ProjectID不能为0")
+	}
+
 	recordDaos, count, err := compile_service.FindCompileOrders(ctx, payload.ProjectId, payload.Page, payload.PageSize)
 	if err != nil {
 		panic(err)

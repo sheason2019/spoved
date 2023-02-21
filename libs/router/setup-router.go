@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http/httputil"
 	"net/url"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 	account_controller "github.com/sheason2019/spoved/libs/controller/account"
@@ -14,11 +15,8 @@ import (
 )
 
 func SetupRouter() *gin.Engine {
-	r := gin.New()
+	r := gin.Default()
 
-	r.Use(gin.Logger())
-	r.Use(middleware.Recovery)
-	r.Use(middleware.DataLog)
 	r.Use(middleware.UserMiddleware)
 
 	// api service
@@ -32,8 +30,15 @@ func SetupRouter() *gin.Engine {
 	// 路由网关
 	r.Any("/proxy", func(ctx *gin.Context) {})
 
+	reg := regexp.MustCompile(`^/api`)
+
 	// 前端反向代理
 	r.NoRoute(func(ctx *gin.Context) {
+		if reg.Match([]byte(ctx.Request.URL.Path)) {
+			ctx.String(404, "api not found")
+			return
+		}
+
 		proj, err := project_service.FindProject(ctx, "root", "spoved-fe")
 		if err != nil {
 			panic(err)
