@@ -15,8 +15,7 @@ func FindDeployOrders(ctx context.Context, projectId int, page, pageSize int) ([
 
 	err := client.WithContext(context.TODO()).
 		Model(&records).
-		Joins("CompileOrder").
-		Joins("CompileOrder.Project", client.Where("CompileOrder.Project.id = ?", projectId)).
+		Joins("CompileOrder", client.Where("CompileOrder.project_id = ?", projectId)).
 		Preload("Operator").
 		Offset((page - 1) * pageSize).
 		Limit(pageSize).
@@ -30,8 +29,7 @@ func FindDeployOrders(ctx context.Context, projectId int, page, pageSize int) ([
 	var count int64
 	err = client.WithContext(ctx).
 		Model(&records).
-		Preload("CompileOrder").
-		Preload("CompileOrder.Project", client.Where("id = ?", 2)).
+		Joins("CompileOrder", client.Where("CompileOrder.project_id = ?", projectId)).
 		Count(&count).
 		Error
 	if err != nil {

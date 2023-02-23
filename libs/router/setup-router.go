@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	account_controller "github.com/sheason2019/spoved/libs/controller/account"
 	compile_controller "github.com/sheason2019/spoved/libs/controller/compile"
+	deploy_controller "github.com/sheason2019/spoved/libs/controller/deploy"
 	project_controller "github.com/sheason2019/spoved/libs/controller/project"
 	"github.com/sheason2019/spoved/libs/middleware"
 	project_service "github.com/sheason2019/spoved/libs/service/project"
@@ -25,6 +26,7 @@ func SetupRouter() *gin.Engine {
 		account_controller.BindController(apiService)
 		project_controller.BindController(apiService)
 		compile_controller.BindController(apiService)
+		deploy_controller.BindController(apiService)
 	}
 
 	// 路由网关

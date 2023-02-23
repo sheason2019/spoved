@@ -9,6 +9,6 @@ type deployController struct{}
 
 var dc deploy.DeployApi = deployController{}
 
-func BindController(r *gin.Engine) {
+func BindController(r gin.IRouter) {
 	bindGetDeployOrders(r)
 }

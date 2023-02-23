@@ -39,7 +39,7 @@ func (deployController) GetDeployOrders(ctx *gin.Context, payload deploy.GetDepl
 	}
 }
 
-func bindGetDeployOrders(r *gin.Engine) {
+func bindGetDeployOrders(r gin.IRouter) {
 	r.GET(deploy.DeployApiDefinition.GET_DEPLOY_ORDERS_PATH, func(ctx *gin.Context) {
 		payload := middleware.GetProps[deploy.GetDeployOrdersPayload](ctx)
 		ctx.JSON(200, dc.GetDeployOrders(ctx, *payload))
