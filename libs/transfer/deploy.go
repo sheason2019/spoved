@@ -7,12 +7,11 @@ import (
 
 func DeployOrderToIdl(do *dao.DeployOrder) *deploy.DeployOrder {
 	return &deploy.DeployOrder{
-		Id:             int(do.ID),
-		ProjectId:      do.CompileOrder.ProjectID,
-		Image:          do.Image,
-		CreateAt:       int(do.CreatedAt.Unix()),
-		Operator:       do.Operator.Username,
-		CompileOrderId: do.CompileOrderID,
-		StatusCode:     do.StatusCode,
+		Id:           int(do.ID),
+		Image:        do.Image,
+		CreateAt:     int(do.CreatedAt.Unix()),
+		Operator:     do.Operator.Username,
+		StatusCode:   do.StatusCode,
+		CompileOrder: *CompileOrderToIdl(&do.CompileOrder),
 	}
 }
