@@ -13,7 +13,12 @@ func FindProjectById(ctx context.Context, id int) (*dao.Project, error) {
 	client := dbc.DB
 
 	projDao := &dao.Project{}
-	err := client.WithContext(ctx).Where("id = ?", id).Find(projDao).Error
+	err := client.
+		WithContext(ctx).
+		Preload("Creator").
+		Where("id = ?", id).
+		Find(projDao).
+		Error
 	if err == gorm.ErrRecordNotFound {
 		return nil, nil
 	}

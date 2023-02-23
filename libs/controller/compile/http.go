@@ -12,4 +12,5 @@ var cc compile.CompileApi = compileController{}
 func BindController(r gin.IRoutes) {
 	bindPostCompile(r)
 	bindGetCompileOrders(r)
+	bindGetOptionalImages(r)
 }

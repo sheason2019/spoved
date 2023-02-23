@@ -24,14 +24,14 @@ func CompileRun(ctx context.Context, co *dao.CompileOrder) (err error) {
 	}(err)
 
 	// 拉取代码
-	fmt.Println("开始拉取代码")
+	fmt.Printf("CompileOrder: %d Version: %s 开始拉取代码\n", co.ID, co.Version)
 	err = k3s_service.GitClone(ctx, co)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
 	// 执行编译命令
-	fmt.Println("开始执行编译")
+	fmt.Printf("CompileOrder: %d Version: %s 开始执行编译\n", co.ID, co.Version)
 	err = k3s_service.Build(ctx, co)
 	if err != nil {
 		return errors.WithStack(err)

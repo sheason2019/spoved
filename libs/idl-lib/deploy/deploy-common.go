@@ -25,3 +25,7 @@ type GetDeployOrdersResponse struct {
 	Records    []DeployOrder     `json:"records" form:"records"`
 	Pagination common.Pagination `json:"pagination" form:"pagination"`
 }
+
+type GetOptionalImagesResponse struct {
+	Images []string `json:"images" form:"images"`
+}

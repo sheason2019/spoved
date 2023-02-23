@@ -11,4 +11,5 @@ var dc deploy.DeployApi = deployController{}
 
 func BindController(r gin.IRouter) {
 	bindGetDeployOrders(r)
+	bindGetOptionalImages(r)
 }

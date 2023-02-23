@@ -1,14 +1,14 @@
 package images
 
-var optional_compile_images = []string{"node:16-alpine", "golang:1.20.0-alpine3.17"}
-var optional_deploy_images = []string{"node:16-alpine", "golang:1.20.0-alpine3.17", "root/spoved-nginx"}
+var OptionalCompileImages = []string{"node:16-alpine", "golang:1.20.0-alpine3.17"}
+var OptionalDeployImages = []string{"node:16-alpine", "golang:1.20.0-alpine3.17", "root/spoved-nginx"}
 
 func ValidateImage(image string, method string) (support bool) {
 	var images []string
 	if method == "compile" {
-		images = optional_compile_images
+		images = OptionalCompileImages
 	} else if method == "deploy" {
-		images = optional_deploy_images
+		images = OptionalDeployImages
 	} else {
 		return false
 	}

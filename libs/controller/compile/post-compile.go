@@ -1,6 +1,8 @@
 package compile_controller
 
 import (
+	"context"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/idl-lib/compile"
@@ -8,6 +10,7 @@ import (
 	compile_service "github.com/sheason2019/spoved/libs/service/compile"
 	project_service "github.com/sheason2019/spoved/libs/service/project"
 	"github.com/sheason2019/spoved/libs/transfer"
+	"github.com/sheason2019/spoved/libs/utils"
 )
 
 // 创建编译工单
@@ -19,22 +22,33 @@ func (compileController) PostCompileOrder(ctx *gin.Context, payload compile.Comp
 		panic(err)
 	}
 
+	// 权限校验
+	err = compile_service.ValidateOperator(ctx, proj, currentUser)
+	if err != nil {
+		panic(err)
+	}
+
+	// fetch 下一个版本的版本号
 	nv, err := compile_service.FindNextVersionForProject(ctx, int(proj.ID), payload.Version)
 	if err != nil {
 		panic(err)
 	}
 
+	// 创建编译工单
 	order := &dao.CompileOrder{
 		Image:    payload.Image,
 		Version:  nv,
 		Branch:   payload.Branch,
 		Project:  *proj,
 		Operator: *currentUser,
+		Env:      utils.StringToMap(payload.Env),
 	}
 	err = compile_service.CreateCompileOrder(ctx, order)
 	if err != nil {
 		panic(err)
 	}
+
+	go compile_service.CompileRun(context.TODO(), order)
 
 	return *transfer.CompileOrderToIdl(order)
 }

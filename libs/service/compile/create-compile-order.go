@@ -10,9 +10,6 @@ import (
 )
 
 func CreateCompileOrder(ctx context.Context, order *dao.CompileOrder) error {
-	// TODO: 工单创建权限校验
-
-	// 工单创建时校验镜像
 	// 镜像校验
 	if !images.ValidateImage(order.Image, "compile") {
 		return errors.WithStack(errors.New("不支持的镜像：" + order.Image))
