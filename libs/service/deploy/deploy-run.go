@@ -17,5 +17,7 @@ func DeployRun(ctx context.Context, do *dao.DeployOrder) error {
 		fmt.Println("error::", err)
 	}
 
+	// TODO: 这里还需要创建Service，并将Service名称写入DeployOrder中
+
 	return nil
 }

@@ -19,6 +19,7 @@ func initSpoved(ctx context.Context, root *dao.User) error {
 		return errors.WithStack(err)
 	}
 
+	// TODO: Service应当与DeployOrder相绑定而不是与Project绑定，这里应当被移除
 	// 创建与Project绑定的Service
 	err = k3s_service.CreateServiceByProject(ctx, proj)
 	if err != nil {
@@ -35,12 +36,12 @@ func initSpoved(ctx context.Context, root *dao.User) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
+
 	// 创建CompileOrder
-	// 否则创建编译工单并执行编译
 	co := &dao.CompileOrder{
 		Image:      "golang:1.20.0-alpine3.17",
 		Version:    version,
-		StatusCode: 1,
+		StatusCode: 0,
 		Branch:     init_branch,
 		Env: map[string]string{
 			"PRODUCT":    "true",
