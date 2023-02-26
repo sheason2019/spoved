@@ -10,14 +10,14 @@ import (
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func CreateServiceByProject(ctx context.Context, proj *dao.Project) error {
+func CreateServiceByDeployOrder(ctx context.Context, do *dao.DeployOrder) error {
 	// 根据Project的信息对Service名称进行初始化
-	serviceName := "service-proj-id-" + fmt.Sprint(proj.ID)
+	serviceName := "service-deploy-order-id-" + fmt.Sprint(do.ID)
 	// 创建Selector
 	selector := meta_v1.LabelSelector{
 		MatchLabels: map[string]string{
-			"owner":       proj.Creator.Username,
-			"projectName": proj.ProjectName,
+			"owner":       do.CompileOrder.Project.Creator.Username,
+			"projectName": do.CompileOrder.Project.ProjectName,
 		},
 	}
 
@@ -32,19 +32,19 @@ func CreateServiceByProject(ctx context.Context, proj *dao.Project) error {
 	if len(services.Items) > 0 {
 		// 如果Project对应的Service已存在，则将ServiceName赋给Project
 		svc := services.Items[0]
-		proj.ServiceName = svc.Name
+		do.ServiceName = svc.Name
 	} else {
 		// 否则创建一个Service，并将ServiceName赋给Project
-		svc := proj.GenerateService(serviceName)
+		svc := do.GenerateService(serviceName)
 		svc, err := postService(ctx, svc)
 		if err != nil {
 			return err
 		}
-		proj.ServiceName = svc.Name
+		do.ServiceName = svc.Name
 	}
 
 	// 保存Project
-	return dbc.DB.WithContext(ctx).Save(proj).Error
+	return dbc.DB.WithContext(ctx).Save(do).Error
 }
 
 func postService(ctx context.Context, svc *v1.Service) (*v1.Service, error) {

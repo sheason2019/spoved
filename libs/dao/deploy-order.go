@@ -10,8 +10,9 @@ import (
 type DeployOrder struct {
 	gorm.Model
 	// 部署时使用的镜像名称
-	Image      string
-	StatusCode int
+	Image       string
+	StatusCode  int
+	ServiceName string
 
 	// 构建时所指定的环境变量
 	Env map[string]string `gorm:"serializer:json"`
@@ -106,6 +107,32 @@ func (do *DeployOrder) GenerateDeployment(deployName string) *appv1.Deployment {
 	}
 
 	return deployment
+}
+
+func (do *DeployOrder) GenerateService(svcName string) *v1.Service {
+	selector := map[string]string{
+		"owner":       do.CompileOrder.Project.Creator.Username,
+		"projectName": do.CompileOrder.Project.ProjectName,
+	}
+
+	svc := v1.Service{
+		ObjectMeta: meta_v1.ObjectMeta{
+			Name:      svcName,
+			Namespace: "default",
+			Labels:    selector,
+		},
+		Spec: v1.ServiceSpec{
+			Ports: []v1.ServicePort{
+				{
+					Port:     80,
+					Protocol: "TCP",
+				},
+			},
+			Selector: selector,
+		},
+	}
+
+	return &svc
 }
 
 func int32Ptr(i int32) *int32 { return &i }

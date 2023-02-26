@@ -19,19 +19,6 @@ func initSpoved(ctx context.Context, root *dao.User) error {
 		return errors.WithStack(err)
 	}
 
-	// TODO: Service应当与DeployOrder相绑定而不是与Project绑定，这里应当被移除
-	// 创建与Project绑定的Service
-	err = k3s_service.CreateServiceByProject(ctx, proj)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	// 创建Ingress
-	_, err = k3s_service.CreateSpovedIngress(ctx, proj)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
 	version, err := compile_service.FindNextVersionForProject(ctx, int(proj.ID), "Patch")
 	if err != nil {
 		return errors.WithStack(err)
@@ -71,6 +58,18 @@ func initSpoved(ctx context.Context, root *dao.User) error {
 	}
 
 	err = deploy_service.CreateDeployOrder(ctx, do)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// 创建与Project绑定的Service
+	err = k3s_service.CreateServiceByDeployOrder(ctx, do)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// 更新Ingress
+	_, err = k3s_service.UpdateSpovedIngress(ctx, do)
 	if err != nil {
 		return errors.WithStack(err)
 	}

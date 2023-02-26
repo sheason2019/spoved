@@ -20,12 +20,6 @@ func initSpovedFe(ctx context.Context, root *dao.User) error {
 		return errors.WithStack(err)
 	}
 
-	// 初始化Spoved-fe 的 Service
-	err = k3s_service.CreateServiceByProject(ctx, proj)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
 	version, err := compile_service.FindNextVersionForProject(ctx, int(proj.ID), "Patch")
 	if err != nil {
 		return errors.WithStack(err)
@@ -50,6 +44,12 @@ func initSpovedFe(ctx context.Context, root *dao.User) error {
 
 	// 执行部署逻辑，在k3s中为spoved-fe创建deployment
 	do, err := deploy_service.CreateDeployOrderByCO(ctx, root, co, "root/spoved-nginx")
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// 初始化Spoved-fe 的 Service
+	err = k3s_service.CreateServiceByDeployOrder(ctx, do)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -79,5 +79,3 @@ func createSpovedFeProject(ctx context.Context, root *dao.User) (proj *dao.Proje
 
 	return
 }
-
-func createSpovedFeCompileOrder(ctx context.Context, root *dao.User, proj *dao.Project) {}

@@ -21,7 +21,9 @@ func TestGitClone(t *testing.T) {
 }
 
 func TestCreateIngress(t *testing.T) {
-	ingress, err := CreateSpovedIngress(context.TODO(), &dao.Project{})
+	do := &dao.DeployOrder{}
+
+	ingress, err := UpdateSpovedIngress(context.TODO(), do)
 	if err != nil {
 		t.Error(err)
 		return

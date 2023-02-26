@@ -41,12 +41,13 @@ func SetupRouter() *gin.Engine {
 			return
 		}
 
-		proj, err := project_service.FindProject(ctx, "root", "spoved-fe")
+		// TODO: 根据Project索引路由
+		_, err := project_service.FindProject(ctx, "root", "spoved-fe")
 		if err != nil {
 			panic(err)
 		}
 
-		proxyUrl, _ := url.Parse(fmt.Sprintf("http://%s", proj.ServiceName))
+		proxyUrl, _ := url.Parse(fmt.Sprintf("http://%s", ""))
 		rp := httputil.NewSingleHostReverseProxy(proxyUrl)
 		rp.ServeHTTP(ctx.Writer, ctx.Request)
 	})
