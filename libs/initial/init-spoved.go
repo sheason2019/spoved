@@ -62,13 +62,18 @@ func initSpoved(ctx context.Context, root *dao.User) error {
 		return errors.WithStack(err)
 	}
 
+	err = deploy_service.DeployRun(ctx, do)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	// 更新Ingress
 	_, err = k3s_service.UpdateSpovedIngress(ctx, do)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	return deploy_service.DeployRun(ctx, do)
+	return nil
 }
 
 func createSpovedProject(ctx context.Context, root *dao.User) (*dao.Project, error) {
