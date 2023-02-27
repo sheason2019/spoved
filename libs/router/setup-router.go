@@ -12,7 +12,7 @@ import (
 	deploy_controller "github.com/sheason2019/spoved/libs/controller/deploy"
 	project_controller "github.com/sheason2019/spoved/libs/controller/project"
 	"github.com/sheason2019/spoved/libs/middleware"
-	project_service "github.com/sheason2019/spoved/libs/service/project"
+	proxy_service "github.com/sheason2019/spoved/libs/service/proxy"
 )
 
 func SetupRouter() *gin.Engine {
@@ -41,13 +41,12 @@ func SetupRouter() *gin.Engine {
 			return
 		}
 
-		// TODO: 根据Project索引路由
-		_, err := project_service.FindProject(ctx, "root", "spoved-fe")
+		host, err := proxy_service.FindProxyHost(ctx, "root", "spoved-fe")
 		if err != nil {
 			panic(err)
 		}
 
-		proxyUrl, _ := url.Parse(fmt.Sprintf("http://%s", ""))
+		proxyUrl, _ := url.Parse(fmt.Sprintf("http://%s", host))
 		rp := httputil.NewSingleHostReverseProxy(proxyUrl)
 		rp.ServeHTTP(ctx.Writer, ctx.Request)
 	})

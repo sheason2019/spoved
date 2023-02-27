@@ -2,8 +2,8 @@ package project_service
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
 	"gorm.io/gorm"
@@ -26,7 +26,7 @@ func FindProject(ctx context.Context, username, projName string) (*dao.Project, 
 		return nil, nil
 	}
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, fmt.Errorf("FindProjectError:%w", err)
 	}
 
 	return projDao, nil
