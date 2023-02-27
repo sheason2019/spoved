@@ -2,7 +2,6 @@ package deploy_service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/sheason2019/spoved/libs/dao"
 	k3s_service "github.com/sheason2019/spoved/libs/service/k3s"
@@ -11,13 +10,13 @@ import (
 // 部署逻辑执行
 func DeployRun(ctx context.Context, do *dao.DeployOrder) error {
 	// 创建Deployment
-	fmt.Println("创建Deployment")
 	err := k3s_service.Start(ctx, do)
 	if err != nil {
-		fmt.Println("error::", err)
+		do.StatusCode = -1
+	} else {
+		do.StatusCode = 1
 	}
 
-	// TODO: 这里还需要创建Service，并将Service名称写入DeployOrder中
-
-	return nil
+	// 根据DeployOrder创建Service
+	return k3s_service.CreateServiceByDeployOrder(ctx, do)
 }

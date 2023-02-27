@@ -62,12 +62,6 @@ func initSpoved(ctx context.Context, root *dao.User) error {
 		return errors.WithStack(err)
 	}
 
-	// 创建与Project绑定的Service
-	err = k3s_service.CreateServiceByDeployOrder(ctx, do)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
 	// 更新Ingress
 	_, err = k3s_service.UpdateSpovedIngress(ctx, do)
 	if err != nil {

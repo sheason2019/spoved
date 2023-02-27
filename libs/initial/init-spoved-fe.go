@@ -8,7 +8,6 @@ import (
 	"github.com/sheason2019/spoved/libs/idl-lib/project"
 	compile_service "github.com/sheason2019/spoved/libs/service/compile"
 	deploy_service "github.com/sheason2019/spoved/libs/service/deploy"
-	k3s_service "github.com/sheason2019/spoved/libs/service/k3s"
 	project_service "github.com/sheason2019/spoved/libs/service/project"
 )
 
@@ -48,18 +47,7 @@ func initSpovedFe(ctx context.Context, root *dao.User) error {
 		return errors.WithStack(err)
 	}
 
-	// 初始化Spoved-fe 的 Service
-	err = k3s_service.CreateServiceByDeployOrder(ctx, do)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	err = deploy_service.DeployRun(ctx, do)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	return nil
+	return deploy_service.DeployRun(ctx, do)
 }
 
 func createSpovedFeProject(ctx context.Context, root *dao.User) (proj *dao.Project, exist bool, err error) {
