@@ -12,16 +12,12 @@ import (
 
 // 为Spoved Service创建Ingress
 func UpdateSpovedIngress(ctx context.Context, do *dao.DeployOrder) (*networking_v1.Ingress, error) {
-	ingress, err := clientSet.NetworkingV1().Ingresses("default").Get(ctx, "spoved-ingress", v1.GetOptions{})
+	exist, err := spovedIngressExist(ctx)
 	if err != nil {
-		if !k8s_err.IsNotFound(err) {
-			return nil, errors.WithStack(err)
-		}
-	} else {
-		return ingress, nil
+		return nil, err
 	}
 
-	ingress = &networking_v1.Ingress{
+	ingress := &networking_v1.Ingress{
 		ObjectMeta: v1.ObjectMeta{
 			Name: "spoved-ingress",
 			Annotations: map[string]string{
@@ -40,5 +36,25 @@ func UpdateSpovedIngress(ctx context.Context, do *dao.DeployOrder) (*networking_
 		},
 	}
 
-	return clientSet.NetworkingV1().Ingresses("default").Update(ctx, ingress, v1.UpdateOptions{})
+	if exist {
+		return clientSet.NetworkingV1().Ingresses("default").Update(ctx, ingress, v1.UpdateOptions{})
+	} else {
+		return clientSet.NetworkingV1().Ingresses("default").Create(ctx, ingress, v1.CreateOptions{})
+	}
+}
+
+func spovedIngressExist(ctx context.Context) (bool, error) {
+	// 尝试获取spoved-ingress
+	_, err := clientSet.NetworkingV1().Ingresses("default").Get(ctx, "spoved-ingress", v1.GetOptions{})
+	if err != nil {
+		// 发生错误时，如果不是没有找到指定的ingress，则抛出错误
+		if !k8s_err.IsNotFound(err) {
+			return false, errors.WithStack(err)
+		} else {
+			return false, nil
+		}
+	} else {
+		// 如果找到了指定的ingress，则返回true
+		return true, nil
+	}
 }
