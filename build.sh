@@ -3,7 +3,7 @@ CURRENT_DIR=$(dirname $0)
 
 cd $CURRENT_DIR
 
-export GOPROXY=https://proxy.golang.com.cn,direct
+export GOPROXY=https://goproxy.cn,direct
 export GOSUMDB=off
 
 OUTPUT_PATH=$CURRENT_DIR/dist/spoved
