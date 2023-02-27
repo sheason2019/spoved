@@ -40,3 +40,7 @@ func getConfig() (*rest.Config, error) {
 
 	return clientcmd.BuildConfigFromFlags("", *kubeconfig)
 }
+
+func GetClientSet() *kubernetes.Clientset {
+	return clientSet
+}
