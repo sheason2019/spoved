@@ -16,7 +16,7 @@ func FindLatestDeployOrder(ctx context.Context, proj *dao.Project) (*dao.DeployO
 		WithContext(ctx).
 		Joins("CompileOrder", client.Where("CompileOrder.project_id = ?", proj.ID)).
 		Limit(1).
-		Order("created_at desc").
+		Order("deploy_orders.created_at desc").
 		Find(&deploys).
 		Error
 
