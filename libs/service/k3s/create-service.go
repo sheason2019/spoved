@@ -15,11 +15,7 @@ func CreateServiceByDeployOrder(ctx context.Context, do *dao.DeployOrder) error 
 	serviceName := "service-deploy-order-id-" + fmt.Sprint(do.ID)
 	// 创建Selector
 	selector := meta_v1.LabelSelector{
-		MatchLabels: map[string]string{
-			"owner":       do.CompileOrder.Project.Creator.Username,
-			"projectName": do.CompileOrder.Project.ProjectName,
-			"version":     do.CompileOrder.Version,
-		},
+		MatchLabels: do.GenerateSelector(),
 	}
 
 	// 寻找指定的服务，判断是否已经启动

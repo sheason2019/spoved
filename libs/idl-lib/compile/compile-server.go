@@ -10,13 +10,13 @@ type CompileApi interface {
 	GetOptionalImages(ctx *gin.Context) GetOptionalImagesResponse
 }
 type _compileApiDefinition struct {
-	GET_OPTIONAL_IMAGES_PATH string
 	POST_COMPILE_ORDER_PATH  string
 	GET_COMPILE_ORDERS_PATH  string
+	GET_OPTIONAL_IMAGES_PATH string
 }
 
 var CompileApiDefinition = _compileApiDefinition{
-	GET_OPTIONAL_IMAGES_PATH: "/CompileApi.OptionalImages",
 	POST_COMPILE_ORDER_PATH:  "/CompileApi.CompileOrder",
 	GET_COMPILE_ORDERS_PATH:  "/CompileApi.CompileOrders",
+	GET_OPTIONAL_IMAGES_PATH: "/CompileApi.OptionalImages",
 }

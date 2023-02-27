@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
 	appv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -17,11 +19,29 @@ type DeployOrder struct {
 	// 构建时所指定的环境变量
 	Env map[string]string `gorm:"serializer:json"`
 
+	// 是否为小流量
+	Miniflow bool
+	// 是否为线上版本
+	Production bool
+
 	Operator   User `gorm:"foreignKey:OperatorID"`
 	OperatorID int
 
 	CompileOrder   CompileOrder `gorm:"foreignKey:CompileOrderID"`
 	CompileOrderID int
+}
+
+func (do *DeployOrder) GenerateSelector() map[string]string {
+	userName := do.CompileOrder.Project.Creator.Username
+	projName := do.CompileOrder.Project.ProjectName
+
+	return map[string]string{
+		"owner":       userName,
+		"version":     do.CompileOrder.Version,
+		"miniflow":    fmt.Sprint(do.Miniflow),
+		"production":  fmt.Sprint(do.Production),
+		"projectName": projName,
+	}
 }
 
 func (do *DeployOrder) GenerateDeployment(deployName string) *appv1.Deployment {
@@ -56,11 +76,7 @@ func (do *DeployOrder) GenerateDeployment(deployName string) *appv1.Deployment {
 	}
 
 	// 设置selector
-	selector := map[string]string{
-		"owner":       userName,
-		"version":     do.CompileOrder.Version,
-		"projectName": projName,
-	}
+	selector := do.GenerateSelector()
 
 	deployment := &appv1.Deployment{
 		ObjectMeta: meta_v1.ObjectMeta{
@@ -112,11 +128,7 @@ func (do *DeployOrder) GenerateDeployment(deployName string) *appv1.Deployment {
 }
 
 func (do *DeployOrder) GenerateService(svcName string) *v1.Service {
-	selector := map[string]string{
-		"owner":       do.CompileOrder.Project.Creator.Username,
-		"version":     do.CompileOrder.Version,
-		"projectName": do.CompileOrder.Project.ProjectName,
-	}
+	selector := do.GenerateSelector()
 
 	svc := v1.Service{
 		ObjectMeta: meta_v1.ObjectMeta{
