@@ -12,6 +12,8 @@ import (
 
 // 为Spoved Service创建Ingress
 func UpdateSpovedIngress(ctx context.Context, do *dao.DeployOrder) (*networking_v1.Ingress, error) {
+	pathType := networking_v1.PathTypePrefix
+
 	exist, err := spovedIngressExist(ctx)
 	if err != nil {
 		return nil, err
@@ -25,11 +27,25 @@ func UpdateSpovedIngress(ctx context.Context, do *dao.DeployOrder) (*networking_
 			},
 		},
 		Spec: networking_v1.IngressSpec{
-			DefaultBackend: &networking_v1.IngressBackend{
-				Service: &networking_v1.IngressServiceBackend{
-					Name: do.ServiceName,
-					Port: networking_v1.ServiceBackendPort{
-						Number: 80,
+			Rules: []networking_v1.IngressRule{
+				{
+					IngressRuleValue: networking_v1.IngressRuleValue{
+						HTTP: &networking_v1.HTTPIngressRuleValue{
+							Paths: []networking_v1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: &pathType,
+									Backend: networking_v1.IngressBackend{
+										Service: &networking_v1.IngressServiceBackend{
+											Name: do.ServiceName,
+											Port: networking_v1.ServiceBackendPort{
+												Number: 80,
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
