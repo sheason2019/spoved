@@ -18,8 +18,11 @@ func CreateServiceByDeployOrder(ctx context.Context, do *dao.DeployOrder) error 
 		MatchLabels: map[string]string{
 			"owner":       do.CompileOrder.Project.Creator.Username,
 			"projectName": do.CompileOrder.Project.ProjectName,
+			"version":     do.CompileOrder.Version,
 		},
 	}
+
+	fmt.Printf("selector: %+v\n", selector)
 
 	// 寻找指定的服务，判断是否已经启动
 	services, err := clientSet.CoreV1().Services("default").List(ctx, meta_v1.ListOptions{

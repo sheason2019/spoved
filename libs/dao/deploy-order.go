@@ -65,6 +65,7 @@ func (do *DeployOrder) GenerateDeployment(deployName string) *appv1.Deployment {
 			Selector: &meta_v1.LabelSelector{
 				MatchLabels: map[string]string{
 					"owner":       userName,
+					"version":     do.CompileOrder.Version,
 					"projectName": projName,
 				},
 			},
@@ -72,6 +73,7 @@ func (do *DeployOrder) GenerateDeployment(deployName string) *appv1.Deployment {
 				ObjectMeta: meta_v1.ObjectMeta{
 					Labels: map[string]string{
 						"owner":       userName,
+						"version":     do.CompileOrder.Version,
 						"projectName": projName,
 					},
 				},
@@ -112,6 +114,7 @@ func (do *DeployOrder) GenerateDeployment(deployName string) *appv1.Deployment {
 func (do *DeployOrder) GenerateService(svcName string) *v1.Service {
 	selector := map[string]string{
 		"owner":       do.CompileOrder.Project.Creator.Username,
+		"version":     do.CompileOrder.Version,
 		"projectName": do.CompileOrder.Project.ProjectName,
 	}
 
