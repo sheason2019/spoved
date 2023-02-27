@@ -41,7 +41,7 @@ func SetupRouter() *gin.Engine {
 			return
 		}
 
-		host, err := proxy_service.FindProxyHost(ctx, "root", "spoved-fe")
+		host, err := proxy_service.GetHost(ctx, "root", "spoved-fe")
 		if err != nil {
 			panic(err)
 		}
