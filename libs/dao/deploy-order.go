@@ -55,27 +55,27 @@ func (do *DeployOrder) GenerateDeployment(deployName string) *appv1.Deployment {
 		})
 	}
 
+	// 设置selector
+	selector := map[string]string{
+		"owner":       userName,
+		"version":     do.CompileOrder.Version,
+		"projectName": projName,
+	}
+
 	deployment := &appv1.Deployment{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Name:      deployName,
 			Namespace: "default",
+			Labels:    selector,
 		},
 		Spec: appv1.DeploymentSpec{
 			Replicas: int32Ptr(1),
 			Selector: &meta_v1.LabelSelector{
-				MatchLabels: map[string]string{
-					"owner":       userName,
-					"version":     do.CompileOrder.Version,
-					"projectName": projName,
-				},
+				MatchLabels: selector,
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: meta_v1.ObjectMeta{
-					Labels: map[string]string{
-						"owner":       userName,
-						"version":     do.CompileOrder.Version,
-						"projectName": projName,
-					},
+					Labels: selector,
 				},
 				Spec: v1.PodSpec{
 					ServiceAccountName: sa,
