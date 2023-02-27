@@ -43,7 +43,7 @@ func FindLastOrderByProjectId(ctx context.Context, id int) (*dao.CompileOrder, e
 	orders := make([]dao.CompileOrder, 0)
 	err := client.WithContext(ctx).
 		Preload("Operator").
-		Preload("Project", client.Where("id = ?", id)).
+		Joins("Project", client.Where("Project.id = ?", id)).
 		Order("compile_orders.created_at desc").
 		Limit(1).
 		Find(&orders).

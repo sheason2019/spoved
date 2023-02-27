@@ -1,6 +1,8 @@
 package compile_service
 
 import (
+	"context"
+	"fmt"
 	"testing"
 
 	"github.com/go-playground/assert/v2"
@@ -22,4 +24,24 @@ func TestNextVersion(t *testing.T) {
 
 	_, e = nextVersion(v, "Random")
 	assert.NotEqual(t, e, nil)
+}
+
+func TestFindLastOrderByProjectId1(t *testing.T) {
+	co, err := FindLastOrderByProjectId(context.TODO(), 1)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	fmt.Printf("%+v", co)
+}
+
+func TestFindLastOrderByProjectId2(t *testing.T) {
+	co, err := FindLastOrderByProjectId(context.TODO(), 2)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	fmt.Printf("%+v", co)
 }
