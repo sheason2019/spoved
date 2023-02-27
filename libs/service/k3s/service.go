@@ -6,7 +6,6 @@ import (
 
 	"github.com/sheason2019/spoved/libs/dao"
 	"github.com/sheason2019/spoved/libs/dbc"
-	v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -33,7 +32,7 @@ func CreateServiceByDeployOrder(ctx context.Context, do *dao.DeployOrder) error 
 	} else {
 		// 否则创建一个Service，并将ServiceName赋给Project
 		svc := do.GenerateService(serviceName)
-		svc, err := postService(ctx, svc)
+		svc, err := clientSet.CoreV1().Services("default").Create(ctx, svc, meta_v1.CreateOptions{})
 		if err != nil {
 			return err
 		}
@@ -44,6 +43,25 @@ func CreateServiceByDeployOrder(ctx context.Context, do *dao.DeployOrder) error 
 	return dbc.DB.WithContext(ctx).Save(do).Error
 }
 
-func postService(ctx context.Context, svc *v1.Service) (*v1.Service, error) {
-	return clientSet.CoreV1().Services("default").Create(ctx, svc, meta_v1.CreateOptions{})
+func ClearServicesByDeployOrder(ctx context.Context, do *dao.DeployOrder) error {
+	// 获取项目下的所有Service
+	services, err := FindProjectServices(ctx, &do.CompileOrder.Project)
+	if err != nil {
+		return fmt.Errorf("error find porjectServices: %w", err)
+	}
+
+	// 获取应当保留的版本
+	currentV := do.CompileOrder.Version
+
+	// 删除非指定版本的Service
+	for _, service := range services.Items {
+		if service.Labels["version"] != currentV {
+			err = clientSet.CoreV1().Services("default").Delete(ctx, service.Name, meta_v1.DeleteOptions{})
+			if err != nil {
+				return fmt.Errorf("error occur when delete service: %w", err)
+			}
+		}
+	}
+
+	return nil
 }
