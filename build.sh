@@ -10,11 +10,11 @@ OUTPUT_PATH=$CURRENT_DIR/dist/spoved
 SPOVED_PATH=$CURRENT_DIR/cmd/spoved
 INITIAL_PATH=$CURRENT_DIR/cmd/initial
 
-echo "PRODUCT = $PRODUCT"
+echo "PRODUCTION = $PRODUCTION"
 echo "BUILD_TYPE = $BUILD_TYPE"
 
 buildSpoved() {
-  if [ "$PRODUCT"z = "true"z ]; then
+  if [ "$PRODUCTION"z = "true"z ]; then
     go build -o $OUTPUT_PATH -tags product $SPOVED_PATH
   else
     go build -o $OUTPUT_PATH $SPOVED_PATH
@@ -22,7 +22,7 @@ buildSpoved() {
 }
 
 buildInitial() {
-  if [ "$PRODUCT"z = "true"z ]; then
+  if [ "$PRODUCTION"z = "true"z ]; then
     go build -o $OUTPUT_PATH -tags product $INITIAL_PATH
   else
     go build -o $OUTPUT_PATH $INITIAL_PATH

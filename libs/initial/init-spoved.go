@@ -31,7 +31,7 @@ func initSpoved(ctx context.Context, root *dao.User) error {
 		StatusCode: 0,
 		Branch:     init_branch,
 		Env: map[string]string{
-			"PRODUCT":    "true",
+			"PRODUCTION": "true",
 			"BUILD_TYPE": "SPOVED",
 		},
 
