@@ -34,15 +34,25 @@ func (compileController) PostCompileOrder(ctx *gin.Context, payload compile.Comp
 		panic(err)
 	}
 
+	// 创建环境变量
+	envMap := utils.StringToMap(payload.Env)
+	if payload.Production {
+		envMap["PRODUCTION"] = "true"
+	} else {
+		envMap["PRODUCTION"] = "false"
+	}
+
 	// 创建编译工单
 	order := &dao.CompileOrder{
-		Image:    payload.Image,
-		Version:  nv,
-		Branch:   payload.Branch,
-		Project:  *proj,
-		Operator: *currentUser,
-		Env:      utils.StringToMap(payload.Env),
+		Image:      payload.Image,
+		Version:    nv,
+		Branch:     payload.Branch,
+		Project:    *proj,
+		Operator:   *currentUser,
+		Production: payload.Production,
+		Env:        envMap,
 	}
+
 	err = compile_service.CreateCompileOrder(ctx, order)
 	if err != nil {
 		panic(err)
