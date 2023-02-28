@@ -14,6 +14,5 @@ func DeployOrderToIdl(do *dao.DeployOrder) *deploy.DeployOrder {
 		StatusCode:   do.StatusCode,
 		CompileOrder: *CompileOrderToIdl(&do.CompileOrder),
 		Miniflow:     do.Miniflow,
-		Production:   do.Production,
 	}
 }

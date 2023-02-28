@@ -1,5 +1,9 @@
 package account
 
+type LoginResponse struct {
+	Token string `json:"token" form:"token"`
+}
+
 type GetUsernameRepeatResponse struct {
 	Repeat bool `json:"repeat" form:"repeat"`
 }
@@ -25,8 +29,4 @@ type AccountInfo struct {
 type AccountCrypto struct {
 	Salt   string `json:"salt" form:"salt"`
 	PubKey string `json:"pubKey" form:"pubKey"`
-}
-
-type LoginResponse struct {
-	Token string `json:"token" form:"token"`
 }

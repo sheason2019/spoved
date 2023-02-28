@@ -21,8 +21,6 @@ type DeployOrder struct {
 
 	// 是否为小流量
 	Miniflow bool
-	// 是否为线上版本
-	Production bool
 
 	Operator   User `gorm:"foreignKey:OperatorID"`
 	OperatorID int
@@ -39,7 +37,7 @@ func (do *DeployOrder) GenerateSelector() map[string]string {
 		"owner":       userName,
 		"version":     do.CompileOrder.Version,
 		"miniflow":    fmt.Sprint(do.Miniflow),
-		"production":  fmt.Sprint(do.Production),
+		"production":  fmt.Sprint(do.CompileOrder.Production),
 		"projectName": projName,
 	}
 }

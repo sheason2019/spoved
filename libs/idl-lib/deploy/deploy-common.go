@@ -5,6 +5,16 @@ import (
 	compile "github.com/sheason2019/spoved/libs/idl-lib/compile"
 )
 
+type DeployOrder struct {
+	Id           int                  `json:"id" form:"id"`
+	Image        string               `json:"image" form:"image"`
+	CreateAt     int                  `json:"createAt" form:"createAt"`
+	Operator     string               `json:"operator" form:"operator"`
+	Miniflow     bool                 `json:"miniflow" form:"miniflow"`
+	CompileOrder compile.CompileOrder `json:"compileOrder" form:"compileOrder"`
+	StatusCode   int                  `json:"statusCode" form:"statusCode"`
+}
+
 type GetDeployOrdersPayload struct {
 	ProjectId int `json:"projectId" form:"projectId"`
 	Page      int `json:"page" form:"page"`
@@ -18,15 +28,4 @@ type GetDeployOrdersResponse struct {
 
 type GetOptionalImagesResponse struct {
 	Images []string `json:"images" form:"images"`
-}
-
-type DeployOrder struct {
-	Id           int                  `json:"id" form:"id"`
-	Image        string               `json:"image" form:"image"`
-	CreateAt     int                  `json:"createAt" form:"createAt"`
-	Operator     string               `json:"operator" form:"operator"`
-	Miniflow     bool                 `json:"miniflow" form:"miniflow"`
-	Production   bool                 `json:"production" form:"production"`
-	CompileOrder compile.CompileOrder `json:"compileOrder" form:"compileOrder"`
-	StatusCode   int                  `json:"statusCode" form:"statusCode"`
 }

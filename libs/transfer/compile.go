@@ -22,5 +22,7 @@ func CompileOrderToIdl(co *dao.CompileOrder) *compile.CompileOrder {
 	record.StatusCode = co.StatusCode
 	record.Version = co.Version
 
+	record.Production = co.Production
+
 	return &record
 }

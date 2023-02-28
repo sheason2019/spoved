@@ -11,13 +11,13 @@ type ProjectApi interface {
 	GetProject(ctx *gin.Context, payload GetProjectPayload) Project
 }
 type _projectApiDefinition struct {
+	GET_PROJECT_PATH  string
 	GET_PROJECTS_PATH string
 	POST_PROJECT_PATH string
-	GET_PROJECT_PATH  string
 }
 
 var ProjectApiDefinition = _projectApiDefinition{
+	GET_PROJECT_PATH:  "/ProjectApi.Project",
 	GET_PROJECTS_PATH: "/ProjectApi.Projects",
 	POST_PROJECT_PATH: "/ProjectApi.Project",
-	GET_PROJECT_PATH:  "/ProjectApi.Project",
 }

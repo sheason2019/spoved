@@ -20,6 +20,8 @@ type CompileOrder struct {
 
 	// 构建时所指定的环境变量
 	Env map[string]string `gorm:"serializer:json"`
+	// 是否为线上版本
+	Production bool
 
 	Operator   User `gorm:"foreignKey:OperatorID"`
 	OperatorID int
