@@ -28,11 +28,23 @@ func (deployController) PostDeployOrder(ctx *gin.Context, payload deploy.DeployO
 		panic(fmt.Errorf("指定了无效的镜像：%s", payload.Image))
 	}
 
+	// 小流量头，仅进行小流量部署时写入该数据
+	headerPair := map[string]string{}
+	if payload.Miniflow {
+		for _, pair := range payload.HeaderPairs {
+			headerPair[pair.Header] = pair.Value
+		}
+	}
+
+	// TODO: 校验输入的小流量头是否合法
+
 	// 创建部署工单，首先需要根据相关的信息创建工单实体
 	do := &dao.DeployOrder{
 		CompileOrderID: payload.CompileOrder.Id,
 		Image:          payload.Image,
 		Operator:       *currentUser,
+		Miniflow:       payload.Miniflow,
+		HeaderPair:     headerPair,
 	}
 	err = deploy_service.CreateDeployOrder(ctx, do)
 	if err != nil {

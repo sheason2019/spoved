@@ -29,7 +29,7 @@ func ClearDeploymentByDeployOrder(ctx context.Context, do *dao.DeployOrder) erro
 
 	// 对所有应当下线的Deployment执行删除操作（通常被下线的Deployment的个数为1）
 	for _, deploy := range deploys.Items {
-		if deploy.Labels["version"] != currentV {
+		if deploy.Labels["version"] != currentV && deploy.Labels["miniflow"] != "true" {
 			err = clientSet.AppsV1().Deployments("default").Delete(ctx, deploy.Name, v1.DeleteOptions{})
 			if err != nil {
 				return fmt.Errorf("error when delete deploy:%w", err)

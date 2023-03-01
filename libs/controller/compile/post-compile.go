@@ -42,6 +42,8 @@ func (compileController) PostCompileOrder(ctx *gin.Context, payload compile.Comp
 		envMap["PRODUCTION"] = "false"
 	}
 
+	// TODO: 校验输入的环境变量是否合法
+
 	// 创建编译工单
 	order := &dao.CompileOrder{
 		Image:      payload.Image,

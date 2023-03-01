@@ -11,8 +11,14 @@ type DeployOrder struct {
 	CreateAt     int                  `json:"createAt" form:"createAt"`
 	Operator     string               `json:"operator" form:"operator"`
 	Miniflow     bool                 `json:"miniflow" form:"miniflow"`
+	HeaderPairs  []HeaderPair         `json:"headerPairs" form:"headerPairs"`
 	CompileOrder compile.CompileOrder `json:"compileOrder" form:"compileOrder"`
 	StatusCode   int                  `json:"statusCode" form:"statusCode"`
+}
+
+type HeaderPair struct {
+	Header string `json:"header" form:"header"`
+	Value  string `json:"value" form:"value"`
 }
 
 type GetDeployOrdersPayload struct {

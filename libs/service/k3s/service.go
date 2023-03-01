@@ -53,9 +53,9 @@ func ClearServicesByDeployOrder(ctx context.Context, do *dao.DeployOrder) error 
 	// 获取应当保留的版本
 	currentV := do.CompileOrder.Version
 
-	// 删除非指定版本的Service
+	// 删除非指定版本的线上环境Service
 	for _, service := range services.Items {
-		if service.Labels["version"] != currentV {
+		if service.Labels["version"] != currentV && service.Labels["miniflow"] != "true" {
 			err = clientSet.CoreV1().Services("default").Delete(ctx, service.Name, meta_v1.DeleteOptions{})
 			if err != nil {
 				return fmt.Errorf("error occur when delete service: %w", err)

@@ -16,11 +16,10 @@ type DeployOrder struct {
 	StatusCode  int
 	ServiceName string
 
-	// 构建时所指定的环境变量
-	Env map[string]string `gorm:"serializer:json"`
-
 	// 是否为小流量
 	Miniflow bool
+	// 小流量头匹配
+	HeaderPair map[string]string `gorm:"serializer:json"`
 
 	Operator   User `gorm:"foreignKey:OperatorID"`
 	OperatorID int
