@@ -8,15 +8,16 @@ import (
 	"github.com/sheason2019/spoved/libs/dbc"
 )
 
-func FindLatestDeployOrder(ctx context.Context, proj *dao.Project) (*dao.DeployOrder, error) {
+// 寻找指定Project下正在执行的DeployOrder
+func FindRunningDeployOrders(ctx context.Context, proj *dao.Project) ([]dao.DeployOrder, error) {
 	client := dbc.DB
 
 	deploys := make([]dao.DeployOrder, 0)
 	err := client.
 		WithContext(ctx).
 		Joins("CompileOrder", client.Where("CompileOrder.project_id = ?", proj.ID)).
-		Limit(1).
-		Order("deploy_orders.created_at desc").
+		Where("deploy_orders.service_name is not NULL").
+		Where("deploy_orders.service_name is not ''").
 		Find(&deploys).
 		Error
 
@@ -24,9 +25,5 @@ func FindLatestDeployOrder(ctx context.Context, proj *dao.Project) (*dao.DeployO
 		return nil, fmt.Errorf("FindLatestDeployOrderError:%w", err)
 	}
 
-	if len(deploys) == 0 {
-		return nil, nil
-	}
-
-	return &deploys[0], nil
+	return deploys, nil
 }

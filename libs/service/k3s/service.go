@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/sheason2019/spoved/libs/dao"
-	"github.com/sheason2019/spoved/libs/dbc"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -39,8 +38,7 @@ func CreateServiceByDeployOrder(ctx context.Context, do *dao.DeployOrder) error 
 		do.ServiceName = svc.Name
 	}
 
-	// 保存Project
-	return dbc.DB.WithContext(ctx).Save(do).Error
+	return nil
 }
 
 func ClearServicesByDeployOrder(ctx context.Context, do *dao.DeployOrder) error {

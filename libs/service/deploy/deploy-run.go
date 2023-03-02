@@ -10,9 +10,18 @@ import (
 )
 
 // 部署逻辑执行
-func DeployRun(ctx context.Context, do *dao.DeployOrder) error {
+func DeployRun(ctx context.Context, do *dao.DeployOrder) (err error) {
+	// 结束部署逻辑后修改DeployOrder的状态
+	defer func() {
+		if err != nil {
+			do.StatusCode = -1
+		} else {
+			do.StatusCode = 1
+		}
+		dbc.DB.Save(do)
+	}()
 	// 为DeployOrder注入关联信息
-	err := dbc.DB.
+	err = dbc.DB.
 		Preload("CompileOrder").
 		Preload("CompileOrder.Project").
 		Preload("CompileOrder.Project.Creator").
@@ -26,9 +35,7 @@ func DeployRun(ctx context.Context, do *dao.DeployOrder) error {
 	// 创建Deployment
 	err = k3s_service.CreateDeploymentByDeployOrder(ctx, do)
 	if err != nil {
-		do.StatusCode = -1
-	} else {
-		do.StatusCode = 1
+		return err
 	}
 
 	// 根据DeployOrder创建Service

@@ -8,19 +8,36 @@ import (
 	project_service "github.com/sheason2019/spoved/libs/service/project"
 )
 
-func findProxyHost(ctx context.Context, username, projectName string) (string, error) {
+func findProxyHostInfo(ctx context.Context, username, projectName string) (*DebounceHostInfo, error) {
 	proj, err := project_service.FindProject(ctx, "root", "spoved-fe")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	do, err := deploy_service.FindLatestDeployOrder(ctx, proj)
+	orders, err := deploy_service.FindRunningDeployOrders(ctx, proj)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	if do == nil {
-		return "", fmt.Errorf("error: DeployOrder is nil on FindProxyHost")
+	if len(orders) == 0 {
+		return nil, fmt.Errorf("error: DeployOrder is nil on FindProxyHost")
 	}
 
-	return do.ServiceName, nil
+	info := &DebounceHostInfo{}
+
+	miniflowMatches := []HostMatch{}
+	info.Miniflow = miniflowMatches
+
+	for _, order := range orders {
+		match := HostMatch{
+			HostPath:    order.ServiceName,
+			HeaderMatch: order.HeaderPair,
+		}
+		if order.Miniflow {
+			miniflowMatches = append(miniflowMatches, match)
+		} else {
+			info.Online = match
+		}
+	}
+
+	return info, nil
 }
