@@ -18,14 +18,12 @@ func findProxyHostInfo(ctx context.Context, username, projectName string) (*Debo
 	if err != nil {
 		return nil, err
 	}
+
 	if len(orders) == 0 {
 		return nil, fmt.Errorf("error: DeployOrder is nil on FindProxyHost")
 	}
 
-	info := &DebounceHostInfo{}
-
-	miniflowMatches := []HostMatch{}
-	info.Miniflow = miniflowMatches
+	info := &DebounceHostInfo{Miniflow: []HostMatch{}}
 
 	for _, order := range orders {
 		match := HostMatch{
@@ -33,7 +31,7 @@ func findProxyHostInfo(ctx context.Context, username, projectName string) (*Debo
 			HeaderMatch: order.HeaderPair,
 		}
 		if order.Miniflow {
-			miniflowMatches = append(miniflowMatches, match)
+			info.Miniflow = append(info.Miniflow, match)
 		} else {
 			info.Online = match
 		}
