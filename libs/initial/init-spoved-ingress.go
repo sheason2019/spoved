@@ -78,7 +78,7 @@ func initSpovedIngress(ctx context.Context, root *dao.User) error {
 
 func createSpovedIngressProject(ctx context.Context, root *dao.User) (*dao.Project, error) {
 	// 如果Spoved已存在则跳过创建步骤
-	proj, err := project_service.FindProject(ctx, root.Username, "spoved")
+	proj, err := project_service.FindProject(ctx, root.Username, "spoved-ingress")
 	if err != nil {
 		return nil, err
 	}

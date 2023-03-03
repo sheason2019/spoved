@@ -15,6 +15,7 @@ func SetupProxy() *gin.Engine {
 
 	// /api/ 请求反向代理到 Spoved
 	r.Any("/api/*endpoint", func(ctx *gin.Context) {
+		ctx.Request.URL.Path = ctx.Param("endpoint")
 		proxyTo(ctx, "root", "spoved")
 	})
 
