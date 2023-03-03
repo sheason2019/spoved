@@ -47,7 +47,7 @@ func DeployRun(ctx context.Context, do *dao.DeployOrder) (err error) {
 	// 由于网关服务没有与Spoved进行解耦，这里需要对部署Spoved的情况进行特殊处理
 	// 在部署Spoved服务以后，需要调整ingress的入口
 	proj := do.CompileOrder.Project
-	if proj.Creator.Username == "root" && proj.ProjectName == "spoved" {
+	if proj.Creator.Username == "root" && proj.ProjectName == "spoved-ingress" {
 		_, err = k3s_service.UpdateSpovedIngress(ctx, do)
 	}
 
