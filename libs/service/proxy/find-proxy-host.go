@@ -9,7 +9,7 @@ import (
 )
 
 func findProxyHostInfo(ctx context.Context, username, projectName string) (*DebounceHostInfo, error) {
-	proj, err := project_service.FindProject(ctx, "root", "spoved-fe")
+	proj, err := project_service.FindProject(ctx, username, projectName)
 	if err != nil {
 		return nil, err
 	}
