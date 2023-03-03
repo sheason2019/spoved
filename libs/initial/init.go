@@ -19,7 +19,11 @@ func Initial(ctx context.Context) {
 	if err != nil {
 		panic(err)
 	}
-
+	fmt.Println("正在初始化网关服务")
+	err = initSpovedIngress(ctx, root)
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println("正在初始化Spoved服务")
 	err = initSpoved(ctx, root)
 	if err != nil {

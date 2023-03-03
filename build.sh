@@ -9,6 +9,7 @@ export GOSUMDB=off
 OUTPUT_PATH=$CURRENT_DIR/dist/spoved
 SPOVED_PATH=$CURRENT_DIR/cmd/spoved
 INITIAL_PATH=$CURRENT_DIR/cmd/initial
+SPOVED_INGRESS_PATH=$CURRENT_DIR/cmd/ingress
 
 echo "PRODUCTION = $PRODUCTION"
 echo "BUILD_TYPE = $BUILD_TYPE"
@@ -29,8 +30,18 @@ buildInitial() {
   fi
 }
 
+buildSpovedIngress() {
+  if [ "$PRODUCTION"z = "true"z ]; then
+    go build -o $OUTPUT_PATH -tags product $SPOVED_INGRESS_PATH
+  else
+    go build -o $OUTPUT_PATH $SPOVED_INGRESS_PATH
+  fi
+}
+
 if [ "$BUILD_TYPE"z = "INITIAL"z ]; then
   buildInitial
 elif [ "$BUILD_TYPE"z = "SPOVED"z ]; then
   buildSpoved
+elif [ "$BUILD_TYPE"z = "SPOVED_INGRESS"z ]; then
+  buildSpovedIngress
 fi
